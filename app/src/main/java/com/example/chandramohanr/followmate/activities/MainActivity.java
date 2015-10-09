@@ -3,6 +3,7 @@ package com.example.chandramohanr.followmate.activities;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
@@ -35,6 +36,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.noveogroup.android.log.Log;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 
 @EActivity(R.layout.activity_main)
@@ -179,5 +181,12 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         if (location != null) {
             setLocation(location.getLatitude(), location.getLongitude());
         }
+    }
+
+    @Click(R.id.start_session)
+    public void startNewSession(){
+        Intent intent = new Intent(activity,InitiateSessionActivity_.class);
+        intent.putExtra("openAs","create");
+        startActivity(intent);
     }
 }
