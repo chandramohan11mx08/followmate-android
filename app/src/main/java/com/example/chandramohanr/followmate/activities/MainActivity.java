@@ -1,12 +1,15 @@
 package com.example.chandramohanr.followmate.activities;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.IntentSender;
+import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import com.example.chandramohanr.followmate.R;
 import com.google.android.gms.common.ConnectionResult;
@@ -21,9 +24,14 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.noveogroup.android.log.Log;
 
 import org.androidannotations.annotations.AfterViews;
@@ -36,10 +44,14 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     Activity activity;
     GoogleApiClient googleApiClient = null;
     private LocationRequest mLocationRequest;
+    MapFragment mapFragment;
+    GoogleMap map;
+    Marker marker;
 
     @AfterViews
     void afterViewInjection() {
         activity = this;
+        mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         googleApiClient = new GoogleApiClient.Builder(activity)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
@@ -47,7 +59,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         googleApiClient.connect();
         mLocationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(5 * 1000)
+                .setInterval(1 * 1000)
                 .setFastestInterval(1 * 1000);
 
         if (isGPSEnabled(activity)) {
@@ -55,13 +67,42 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         } else {
             turnGPSOn();
         }
-
-        MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        map = googleMap;
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+        String provider = locationManager.getBestProvider(criteria, true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    public void requestPermissions(@NonNull String[] permissions, int requestCode)
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for Activity#requestPermissions for more details.
+                return;
+            }
+        }
+        Location location = locationManager.getLastKnownLocation(provider);
+
+        if (location != null) {
+            setLocation(location.getLatitude(), location.getLongitude());
+        }
+    }
+
+    public void setLocation(double lat, double lng) {
+        if (marker != null) {
+            marker.remove();
+        }
+        CameraPosition position = new CameraPosition.Builder()
+                .target(new LatLng(lat, lng)).zoom(15).build();
+        marker = map.addMarker(new MarkerOptions().position(new LatLng(lat, lng)));
+        map.animateCamera(CameraUpdateFactory.newCameraPosition(position));
     }
 
     public static boolean isGPSEnabled(Context mContext) {
@@ -119,6 +160,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     @Override
     public void onConnected(Bundle bundle) {
         Log.a("Google Api connected");
+        mapFragment.getMapAsync(this);
         LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, mLocationRequest, this);
     }
 
@@ -134,6 +176,8 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     @Override
     public void onLocationChanged(Location location) {
-//        Toast.makeText(activity, "Location changed " + location.toString(), Toast.LENGTH_SHORT).show();
+        if (location != null) {
+            setLocation(location.getLatitude(), location.getLongitude());
+        }
     }
 }
