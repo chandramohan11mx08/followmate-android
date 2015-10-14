@@ -11,7 +11,7 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
 @EActivity(R.layout.activity_sigin)
-public class InitiateSessionActivity extends BaseActivity {
+public class SignInActivity extends BaseActivity {
 
     @ViewById(R.id.mobile_number)
     EditText vMobileNumber;

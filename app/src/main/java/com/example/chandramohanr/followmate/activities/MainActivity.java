@@ -185,7 +185,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     @Click(R.id.start_session)
     public void startNewSession(){
-        Intent intent = new Intent(activity,InitiateSessionActivity_.class);
+        Intent intent = new Intent(activity,SignInActivity_.class);
         intent.putExtra("openAs","create");
         startActivity(intent);
     }
