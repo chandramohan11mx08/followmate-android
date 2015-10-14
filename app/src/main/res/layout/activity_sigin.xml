@@ -14,17 +14,10 @@
         android:padding="8dp">
 
         <EditText
-            android:id="@+id/session_name"
+            android:id="@+id/mobile_number"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/session_name"
-            android:padding="16dp" />
-
-        <EditText
-            android:id="@+id/secret_code"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/secret_code"
+            android:hint="@string/enter_mobile_number"
             android:padding="16dp" />
 
         <TextView
@@ -43,6 +36,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/transparent_white"
-            android:text="@string/start_session" />
+            android:text="@string/proceed" />
     </LinearLayout>
 </LinearLayout>

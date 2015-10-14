@@ -13,10 +13,8 @@ import org.androidannotations.annotations.ViewById;
 @EActivity(R.layout.activity_sigin)
 public class InitiateSessionActivity extends BaseActivity {
 
-    @ViewById(R.id.session_name)
-    EditText vSessionName;
-    @ViewById(R.id.secret_code)
-    EditText vSecretCode;
+    @ViewById(R.id.mobile_number)
+    EditText vMobileNumber;
 
     @ViewById(R.id.error_view)
     TextView vErrorMsg;
