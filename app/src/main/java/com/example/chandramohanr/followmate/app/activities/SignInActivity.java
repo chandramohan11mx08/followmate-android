@@ -1,4 +1,4 @@
-package com.example.chandramohanr.followmate.activities.activities;
+package com.example.chandramohanr.followmate.app.activities;
 
 import android.content.Intent;
 import android.widget.Button;
@@ -6,8 +6,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.example.chandramohanr.followmate.R;
-import com.example.chandramohanr.followmate.activities.Constants.AppConstants;
-import com.example.chandramohanr.followmate.activities.services.UserService;
+import com.example.chandramohanr.followmate.app.Constants.AppConstants;
+import com.example.chandramohanr.followmate.app.services.UserService;
 import com.noveogroup.android.log.Log;
 
 import org.androidannotations.annotations.AfterViews;

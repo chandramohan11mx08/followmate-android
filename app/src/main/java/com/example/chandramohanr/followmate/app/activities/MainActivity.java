@@ -1,4 +1,4 @@
-package com.example.chandramohanr.followmate.activities.activities;
+package com.example.chandramohanr.followmate.app.activities;
 
 import android.Manifest;
 import android.app.Activity;

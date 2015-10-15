@@ -1,4 +1,4 @@
-package com.example.chandramohanr.followmate.activities.Constants;
+package com.example.chandramohanr.followmate.app.Constants;
 
 public final class UrlConstants {
 
