@@ -5,4 +5,5 @@
     <string name="proceed">proceed</string>
     <string name="join_session">join</string>
     <string name="enter_mobile_number">Enter mobile number</string>
+    <string name="enter_valid_mobile_number">Enter valid mobile number</string>
 </resources>

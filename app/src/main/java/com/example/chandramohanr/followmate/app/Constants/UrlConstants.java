@@ -9,4 +9,8 @@ public final class UrlConstants {
 
     public static String USER_REGISTER[] = {"http://localhost:6610/register-user","http://localhost:6610/register-user"};
 
+    public static String getUserRegisterUrl(){
+        return USER_REGISTER[CURRENT_ENV];
+    }
+
 }

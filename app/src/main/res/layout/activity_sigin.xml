@@ -1,41 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_gravity="center"
-    android:layout_width="280dp"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_gravity="center"
     android:orientation="vertical">
 
-    <LinearLayout
+    <EditText
+        android:id="@+id/mobile_number"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:animateLayoutChanges="true"
-        android:orientation="vertical"
-        android:padding="8dp">
+        android:layout_centerInParent="true"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:hint="@string/enter_mobile_number"
+        android:padding="16dp" />
 
-        <EditText
-            android:id="@+id/mobile_number"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/enter_mobile_number"
-            android:padding="16dp" />
+    <TextView
+        android:id="@+id/error_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/mobile_number"
+        android:gravity="center"
+        android:padding="8dp"
+        android:text="@string/enter_valid_mobile_number"
+        android:textColor="@color/errorMsg"
+        android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/error_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:padding="8dp"
-            android:text="@string/start_session"
-            android:textColor="@color/errorMsg"
-            android:visibility="gone" />
-
-        <Button
-            android:id="@+id/proceed_button"
-            style="@style/action_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/transparent_white"
-            android:text="@string/proceed" />
-    </LinearLayout>
-</LinearLayout>
+    <Button
+        android:id="@+id/proceed_button"
+        style="@style/action_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/transparent_white"
+        android:text="@string/proceed" />
+</RelativeLayout>
