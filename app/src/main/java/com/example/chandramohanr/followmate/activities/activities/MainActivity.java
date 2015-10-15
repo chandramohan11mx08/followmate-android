@@ -1,4 +1,4 @@
-package com.example.chandramohanr.followmate.activities;
+package com.example.chandramohanr.followmate.activities.activities;
 
 import android.Manifest;
 import android.app.Activity;
@@ -109,7 +109,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     public static boolean isGPSEnabled(Context mContext) {
         LocationManager locationManager = (LocationManager)
-                mContext.getSystemService(Context.LOCATION_SERVICE);
+                mContext.getSystemService(LOCATION_SERVICE);
         boolean providerEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         return providerEnabled;
     }

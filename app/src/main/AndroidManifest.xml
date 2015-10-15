@@ -15,7 +15,10 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.MainActivity_">
+
+        <service android:name=".activities.services.UserService" />
+
+        <activity android:name=".activities.activities.MainActivity_">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,8 +27,7 @@
         </activity>
 
         <activity
-            android:name=".activities.InitiateSessionActivity_"
-            android:theme="@style/Theme.AppDialog" />
+            android:name=".activities.activities.SignInActivity_" />
 
         <meta-data
             android:name="com.google.android.gms.version"

@@ -1,4 +1,4 @@
-package com.example.chandramohanr.followmate.activities;
+package com.example.chandramohanr.followmate.activities.activities;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
