@@ -3,7 +3,8 @@ package com.example.chandramohanr.followmate.app.helpers;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.example.chandramohanr.followmate.app.FollowMateApplication;
+import com.example.chandramohanr.followmate.app.FollowmateApplication;
+import com.noveogroup.android.log.Log;
 
 public class SharedPreferenceHelper {
     public static final String FOLLOWMATE_SHARED_PREF = "com.follomate.app";
@@ -14,13 +15,19 @@ public class SharedPreferenceHelper {
     private static SharedPreferences.Editor editor;
 
     private static void openSharedPreferencesInEditMode() {
-        editor = FollowMateApplication.getContext().
+        editor = FollowmateApplication.getContext().
                 getSharedPreferences(FOLLOWMATE_SHARED_PREF, Context.MODE_PRIVATE).edit();
     }
 
     private static void openSharedPreferencesInReadMode() {
-        sharedPreferences = FollowMateApplication.getContext().
-                getSharedPreferences(FOLLOWMATE_SHARED_PREF, Context.MODE_PRIVATE);
+
+        Context context = FollowmateApplication.getContext();
+        if(context == null){
+            Log.a("context is null");
+        }else{
+            sharedPreferences = context.
+                    getSharedPreferences(FOLLOWMATE_SHARED_PREF, Context.MODE_PRIVATE);
+        }
     }
 
     private static void closeSharedPreferences() {

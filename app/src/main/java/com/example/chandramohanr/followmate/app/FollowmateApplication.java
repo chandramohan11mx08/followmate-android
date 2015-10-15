@@ -5,9 +5,10 @@ import android.content.Context;
 
 import com.noveogroup.android.log.Log;
 
-public class FollowMateApplication extends Application{
+public class FollowmateApplication extends Application{
 
     private static Context mContext;
+
 
     @Override
     public void onCreate(){

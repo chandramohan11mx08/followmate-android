@@ -4,7 +4,7 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="transparent_white">#FFffffff</color>
-    <color name="white">#AAffffff</color>
+    <color name="white">#FFffffff</color>
     <color name="errorMsg">#ff0004</color>
     <color name="black">#000000</color>
 </resources>

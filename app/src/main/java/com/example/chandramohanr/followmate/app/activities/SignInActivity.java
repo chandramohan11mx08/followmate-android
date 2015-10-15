@@ -8,7 +8,6 @@ import android.widget.TextView;
 import com.example.chandramohanr.followmate.R;
 import com.example.chandramohanr.followmate.app.Constants.AppConstants;
 import com.example.chandramohanr.followmate.app.services.UserService;
-import com.noveogroup.android.log.Log;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
@@ -28,7 +27,6 @@ public class SignInActivity extends BaseActivity {
 
     @AfterViews
     public void afterViewInjection() {
-        Log.a("hii");
         Intent intent = new Intent(this, UserService.class);
         intent.putExtra(AppConstants.SERVICE_TYPE, 1);
         startService(intent);
