@@ -12,6 +12,8 @@ import com.example.chandramohanr.followmate.app.models.RegisterMobileNumberRespo
 import com.noveogroup.android.log.Log;
 
 import de.greenrobot.event.EventBus;
+import retrofit.Call;
+import retrofit.Callback;
 import retrofit.Response;
 import retrofit.Retrofit;
 
@@ -30,7 +32,9 @@ public class UserService extends IntentService {
         int apiType = intent.getIntExtra(AppConstants.SERVICE_TYPE, 0);
         switch (apiType) {
             case 1:
-                Log.a("User register api call");
+                String mobileNumber = intent.getStringExtra(AppConstants.MOBILE_NUMBER);
+                String deviceId = intent.getStringExtra(AppConstants.DEVICE_ID);
+                registerUser(mobileNumber, deviceId);
                 break;
             default:
                 Log.a("No matching api type");
@@ -38,16 +42,27 @@ public class UserService extends IntentService {
     }
 
     public void registerUser(String mobileNumber, String deviceId) {
-        userApiContract.registerMobileNumber(mobileNumber, deviceId, new retrofit.Callback<RegisterMobileNumberResponse>() {
+        Call<RegisterMobileNumberResponse> call = userApiContract.registerMobileNumber(mobileNumber, deviceId);
+        call.enqueue(new Callback<RegisterMobileNumberResponse>() {
             @Override
             public void onResponse(Response<RegisterMobileNumberResponse> response, Retrofit retrofit) {
+                Log.a("Response got ");
                 RegisterMobileNumberResponse registerMobileNumberResponse = response.body();
-                registerMobileNumberResponse.status = true;
-                EventBus.getDefault().post(registerMobileNumberResponse);
+                if(registerMobileNumberResponse!=null){
+                    registerMobileNumberResponse.status = true;
+                    EventBus.getDefault().post(registerMobileNumberResponse);
+                }else{
+                 broadcastError();
+                }
             }
 
             @Override
             public void onFailure(Throwable t) {
+                Log.a("Response failed ");
+                broadcastError();
+            }
+
+            private void broadcastError() {
                 RegisterMobileNumberResponse registerMobileNumberResponse = new RegisterMobileNumberResponse();
                 registerMobileNumberResponse.status = false;
                 EventBus.getDefault().post(registerMobileNumberResponse);

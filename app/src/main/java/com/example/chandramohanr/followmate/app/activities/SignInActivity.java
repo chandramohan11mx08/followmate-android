@@ -2,6 +2,7 @@ package com.example.chandramohanr.followmate.app.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -48,9 +49,11 @@ public class SignInActivity extends BaseActivity {
     public void onProceedClick() {
         String mobileNumber = vMobileNumber.getText().toString();
         if (!mobileNumber.isEmpty()) {
+            String deviceId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
             Intent intent = new Intent(this, UserService.class);
             intent.putExtra(AppConstants.SERVICE_TYPE, 1);
             intent.putExtra(AppConstants.MOBILE_NUMBER, mobileNumber);
+            intent.putExtra(AppConstants.DEVICE_ID, deviceId);
             startService(intent);
         } else {
             setErrorMessage(getString(R.string.enter_valid_mobile_number));
