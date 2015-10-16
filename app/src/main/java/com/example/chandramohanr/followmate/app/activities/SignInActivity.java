@@ -1,6 +1,7 @@
 package com.example.chandramohanr.followmate.app.activities;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -30,6 +31,18 @@ public class SignInActivity extends BaseActivity {
     Button vProceedButton;
 
     final EventBus eventBus = EventBus.getDefault();
+
+    @Override
+    public void onCreate(Bundle bundle){
+        super.onCreate(bundle);
+        eventBus.register(this);
+    }
+
+    @Override
+    public void onDestroy(){
+        eventBus.unregister(this);
+        super.onDestroy();
+    }
 
     @Click(R.id.proceed_button)
     public void onProceedClick() {

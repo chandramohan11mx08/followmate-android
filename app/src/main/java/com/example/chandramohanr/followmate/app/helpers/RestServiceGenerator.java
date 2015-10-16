@@ -1,6 +1,7 @@
 package com.example.chandramohanr.followmate.app.helpers;
 
 import com.example.chandramohanr.followmate.BuildConfig;
+import com.facebook.stetho.okhttp.StethoInterceptor;
 import com.squareup.okhttp.OkHttpClient;
 
 import java.util.concurrent.TimeUnit;
@@ -18,7 +19,7 @@ public class RestServiceGenerator {
                                                       String baseUrl){
         OkHttpClient okHttpClient = new OkHttpClient();
         if (BuildConfig.DEBUG) {
-//            okHttpClient.networkInterceptors().add(new StethoInterceptor());
+            okHttpClient.networkInterceptors().add(new StethoInterceptor());
         }
 
         okHttpClient.setConnectTimeout(HTTP_CONNECTION_TIMEOUT_SECONDS, TimeUnit.SECONDS);

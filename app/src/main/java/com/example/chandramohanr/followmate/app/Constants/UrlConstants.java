@@ -2,15 +2,14 @@ package com.example.chandramohanr.followmate.app.Constants;
 
 public final class UrlConstants {
 
-    public static int development = 1;
-    public static int production = 2;
+    private static int development = 0;
+    private static int production = 1;
 
-    public static int CURRENT_ENV = development;
+    private static int CURRENT_ENV = development;
 
-    public static String USER_REGISTER[] = {"http://localhost:6610/register-user","http://localhost:6610/register-user"};
+    private static String USER_REGISTER[] = {"http://192.168.50.56:6610/user/register", "http://localhost:6610/user/register"};
 
     public static String getUserRegisterUrl(){
         return USER_REGISTER[CURRENT_ENV];
     }
-
 }

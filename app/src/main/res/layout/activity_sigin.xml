@@ -13,7 +13,8 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:hint="@string/enter_mobile_number"
-        android:padding="16dp" />
+        android:padding="16dp"
+        android:singleLine="true" />
 
     <TextView
         android:id="@+id/error_view"

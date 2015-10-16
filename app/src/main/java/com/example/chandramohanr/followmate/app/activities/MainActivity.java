@@ -161,7 +161,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     @Override
     public void onConnected(Bundle bundle) {
-        Log.a("Google Api connected");
         mapFragment.getMapAsync(this);
         LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, mLocationRequest, this);
     }
@@ -185,8 +184,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     @Click(R.id.start_session)
     public void startNewSession(){
-        Intent intent = new Intent(activity,SignInActivity_.class);
-        intent.putExtra("openAs","create");
-        startActivity(intent);
+
     }
 }
