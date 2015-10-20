@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import com.example.chandramohanr.followmate.R;
+import com.example.chandramohanr.followmate.app.SocketController;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -183,6 +184,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     @Click(R.id.start_session)
     public void startNewSession(){
-
+        SocketController socketController = new SocketController();
+        socketController.initSession();
     }
 }
