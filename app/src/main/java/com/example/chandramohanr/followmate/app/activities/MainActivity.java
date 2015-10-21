@@ -3,6 +3,7 @@ package com.example.chandramohanr.followmate.app.activities;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
@@ -10,9 +11,12 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.example.chandramohanr.followmate.R;
 import com.example.chandramohanr.followmate.app.SocketController;
+import com.example.chandramohanr.followmate.app.models.events.response.JoinRoomResponse;
+import com.example.chandramohanr.followmate.app.models.events.response.SessionStartedEvent;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -39,6 +43,8 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 
+import de.greenrobot.event.EventBus;
+
 @EActivity(R.layout.activity_main)
 public class MainActivity extends BaseActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -49,6 +55,26 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     MapFragment mapFragment;
     GoogleMap map;
     Marker marker;
+
+    EventBus eventBus = new EventBus();
+
+    private static int JOIN_ACTIVITY_REQUEST_CODE = 1;
+
+    SocketController socketController = new SocketController();
+
+    @Override
+    public void onCreate(Bundle bundle){
+        super.onCreate(bundle);
+        eventBus.register(this);
+        socketController.initSession();
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        socketController.disconnect();
+        eventBus.unregister(this);
+    }
 
     @AfterViews
     void afterViewInjection() {
@@ -184,7 +210,31 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     @Click(R.id.start_session)
     public void startNewSession(){
-        SocketController socketController = new SocketController();
-        socketController.initSession();
+
     }
+
+    @Click(R.id.join_session)
+    public void joinSession(){
+        Intent intent = new Intent(this,AuthenticateJoinActivity_.class);
+        startActivityForResult(intent, JOIN_ACTIVITY_REQUEST_CODE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == JOIN_ACTIVITY_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                Toast.makeText(this, "Result ok", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    public void onEventMainThread(SessionStartedEvent sessionStartedEvent){
+        
+    }
+
+    public void onEventMainThread(JoinRoomResponse joinRoomResponse){
+
+    }
+
 }

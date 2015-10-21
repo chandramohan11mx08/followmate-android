@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="One Time Code"
+        android:textColor="@color/black"
+        android:textSize="16dp" />
+
+    <EditText
+        android:id="@+id/session_code"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter the code to join"
+        android:padding="16dp" />
+
+    <Button
+        android:id="@+id/join_session"
+        style="@style/action_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/join_session"
+        android:textSize="16sp" />
+
+</LinearLayout>

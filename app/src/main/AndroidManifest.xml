@@ -37,6 +37,10 @@
         <activity
             android:name=".app.activities.MainActivity_" />
 
+        <activity
+            android:theme="@style/Theme.AppDialog"
+            android:name=".app.activities.AuthenticateJoinActivity_" />
+
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />

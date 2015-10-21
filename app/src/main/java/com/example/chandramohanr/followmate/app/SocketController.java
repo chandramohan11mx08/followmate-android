@@ -35,6 +35,12 @@ public class SocketController {
         }
     }
 
+    public void disconnect(){
+        if(mSocket!=null){
+            mSocket.disconnect();
+        }
+    }
+
     public void joinSession(JoinSessionRequest joinSessionRequest){
         if(mSocket != null && mSocket.connected()){
             emitEvent(mSocket, "join_session",new Gson().toJson(joinSessionRequest));

@@ -20,6 +20,7 @@ public class SessionEvents {
             if (sessionStartedEvent.is_session_created) {
                 FollowmateApplication.sessionContext = new SessionContext();
                 FollowmateApplication.sessionContext.isSessionActive = sessionStartedEvent.is_session_created;
+                eventBus.post(sessionStartedEvent);
             }
         }
     };
