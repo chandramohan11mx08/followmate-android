@@ -11,6 +11,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chandramohanr.followmate.R;
@@ -42,12 +43,16 @@ import com.noveogroup.android.log.Log;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.ViewById;
 
 import de.greenrobot.event.EventBus;
 
 @EActivity(R.layout.activity_main)
 public class MainActivity extends BaseActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
+
+    @ViewById(R.id.session_info)
+    TextView vSessionInfo;
 
     Activity activity;
     GoogleApiClient googleApiClient = null;
@@ -56,7 +61,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     GoogleMap map;
     Marker marker;
 
-    EventBus eventBus = new EventBus();
+    EventBus eventBus = EventBus.getDefault();
 
     private static int JOIN_ACTIVITY_REQUEST_CODE = 1;
 
@@ -66,7 +71,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     public void onCreate(Bundle bundle){
         super.onCreate(bundle);
         eventBus.register(this);
-        socketController.initSession();
     }
 
     @Override
@@ -121,6 +125,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         if (location != null) {
             setLocation(location.getLatitude(), location.getLongitude());
         }
+        socketController.initSession();
     }
 
     public void setLocation(double lat, double lng) {
@@ -210,7 +215,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     @Click(R.id.start_session)
     public void startNewSession(){
-
+        socketController.connect();
     }
 
     @Click(R.id.join_session)
@@ -230,7 +235,8 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     public void onEventMainThread(SessionStartedEvent sessionStartedEvent){
-        
+        Log.a("on SessionStartedEvent "+sessionStartedEvent.is_session_created);
+        vSessionInfo.setText("code = "+sessionStartedEvent.session_id);
     }
 
     public void onEventMainThread(JoinRoomResponse joinRoomResponse){

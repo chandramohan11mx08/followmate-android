@@ -35,6 +35,12 @@ public class SocketController {
         }
     }
 
+    public void connect(){
+        StartSessionRequest startSessionRequest = new StartSessionRequest();
+        startSessionRequest.userId = AppUtil.getLoggedInUserId();
+        emitEvent(mSocket, "start_session", new Gson().toJson(startSessionRequest));
+    }
+
     public void disconnect(){
         if(mSocket!=null){
             mSocket.disconnect();
@@ -52,9 +58,6 @@ public class SocketController {
         public void call(Object... args) {
             if (!AppUtil.isAnySessionActive()) {
                 Log.a("socket connected");
-                StartSessionRequest startSessionRequest = new StartSessionRequest();
-                startSessionRequest.userId = AppUtil.getLoggedInUserId();
-                emitEvent(mSocket, "start_session", new Gson().toJson(startSessionRequest));
             }
         }
     };
