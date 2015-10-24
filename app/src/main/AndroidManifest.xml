@@ -20,8 +20,9 @@
         <service android:name=".app.services.UserService" />
 
         <activity
-            android:theme="@style/Theme.NoTitle"
-            android:name=".app.activities.SplashActivity_">
+            android:name=".app.activities.SplashActivity_"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.NoTitle">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -30,16 +31,19 @@
         </activity>
 
         <activity
+            android:name=".app.activities.SignInActivity_"
             android:label="@string/register_mobile"
-            android:theme="@style/AppThemeWithActionBar"
-            android:name=".app.activities.SignInActivity_" />
+            android:screenOrientation="portrait"
+            android:theme="@style/AppThemeWithActionBar" />
 
         <activity
-            android:name=".app.activities.MainActivity_" />
+            android:name=".app.activities.MainActivity_"
+            android:screenOrientation="portrait" />
 
         <activity
-            android:theme="@style/Theme.AppDialog"
-            android:name=".app.activities.AuthenticateJoinActivity_" />
+            android:name=".app.activities.AuthenticateJoinActivity_"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppDialog" />
 
         <meta-data
             android:name="com.google.android.gms.version"
