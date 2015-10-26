@@ -22,6 +22,7 @@
         <activity
             android:name=".app.activities.SplashActivity_"
             android:screenOrientation="portrait"
+            android:noHistory="true"
             android:theme="@style/Theme.NoTitle">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

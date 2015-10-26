@@ -57,7 +57,6 @@ public class SocketController {
         @Override
         public void call(Object... args) {
             if (!AppUtil.isAnySessionActive()) {
-                Log.a("socket connected");
             }
         }
     };

@@ -15,7 +15,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chandramohanr.followmate.R;
+import com.example.chandramohanr.followmate.app.Constants.AppConstants;
 import com.example.chandramohanr.followmate.app.SocketController;
+import com.example.chandramohanr.followmate.app.helpers.AppUtil;
+import com.example.chandramohanr.followmate.app.models.events.request.JoinSessionRequest;
 import com.example.chandramohanr.followmate.app.models.events.response.JoinRoomResponse;
 import com.example.chandramohanr.followmate.app.models.events.response.SessionStartedEvent;
 import com.google.android.gms.common.ConnectionResult;
@@ -229,7 +232,10 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == JOIN_ACTIVITY_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                Toast.makeText(this, "Result ok", Toast.LENGTH_SHORT).show();
+                JoinSessionRequest joinSessionRequest = new JoinSessionRequest();
+                joinSessionRequest.used_id = AppUtil.getLoggedInUserId();
+                joinSessionRequest.session_id = data.getStringExtra(AppConstants.SESSION_ID);
+                socketController.joinSession(joinSessionRequest);
             }
         }
     }
@@ -240,7 +246,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     public void onEventMainThread(JoinRoomResponse joinRoomResponse){
-
+        Log.a("new user joined "+joinRoomResponse.joined);
     }
-
 }

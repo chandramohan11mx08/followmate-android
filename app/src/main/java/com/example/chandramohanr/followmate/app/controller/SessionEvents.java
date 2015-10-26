@@ -11,7 +11,7 @@ import de.greenrobot.event.EventBus;
 
 public class SessionEvents {
 
-    final EventBus eventBus = new EventBus();
+    final EventBus eventBus = EventBus.getDefault();
 
     public Emitter.Listener onSessionStarted = new Emitter.Listener() {
         @Override
