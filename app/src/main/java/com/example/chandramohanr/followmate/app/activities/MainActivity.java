@@ -18,6 +18,7 @@ import com.example.chandramohanr.followmate.R;
 import com.example.chandramohanr.followmate.app.Constants.AppConstants;
 import com.example.chandramohanr.followmate.app.SocketController;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
+import com.example.chandramohanr.followmate.app.models.events.StartSessionRequest;
 import com.example.chandramohanr.followmate.app.models.events.request.JoinSessionRequest;
 import com.example.chandramohanr.followmate.app.models.events.response.JoinRoomResponse;
 import com.example.chandramohanr.followmate.app.models.events.response.SessionStartedEvent;
@@ -41,12 +42,15 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.Gson;
 import com.noveogroup.android.log.Log;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import de.greenrobot.event.EventBus;
 
@@ -217,8 +221,19 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     @Click(R.id.start_session)
-    public void startNewSession(){
-        socketController.connect();
+    public void startNewSession() {
+        StartSessionRequest startSessionRequest = new StartSessionRequest();
+        startSessionRequest.userId = AppUtil.getLoggedInUserId();
+        if (startSessionRequest.userId != null) {
+            String json = new Gson().toJson(startSessionRequest);
+            try {
+                socketController.connect(new JSONObject(json));
+            } catch (JSONException e) {
+                Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "No user name attached", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Click(R.id.join_session)
@@ -232,20 +247,36 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == JOIN_ACTIVITY_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                JoinSessionRequest joinSessionRequest = new JoinSessionRequest();
-                joinSessionRequest.used_id = AppUtil.getLoggedInUserId();
-                joinSessionRequest.session_id = data.getStringExtra(AppConstants.SESSION_ID);
-                socketController.joinSession(joinSessionRequest);
+                requestToJoinSession(data);
             }
         }
     }
 
-    public void onEventMainThread(SessionStartedEvent sessionStartedEvent){
-        Log.a("on SessionStartedEvent "+sessionStartedEvent.is_session_created);
-        vSessionInfo.setText("code = "+sessionStartedEvent.session_id);
+    private void requestToJoinSession(Intent data) {
+        JoinSessionRequest joinSessionRequest = new JoinSessionRequest();
+        joinSessionRequest.used_id = AppUtil.getLoggedInUserId();
+        joinSessionRequest.session_id = data.getStringExtra(AppConstants.SESSION_ID);
+        String json = new Gson().toJson(joinSessionRequest);
+        try {
+            socketController.joinSession(new JSONObject(json));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void onEventMainThread(JoinRoomResponse joinRoomResponse){
-        Log.a("new user joined "+joinRoomResponse.joined);
+    public void onEventMainThread(SessionStartedEvent sessionStartedEvent) {
+        Log.a("on SessionStartedEvent " + sessionStartedEvent.is_session_created);
+        if (sessionStartedEvent.is_session_created) {
+            vSessionInfo.setText("code = " + sessionStartedEvent.session_id);
+        } else {
+            Toast.makeText(this, sessionStartedEvent.msg, Toast.LENGTH_SHORT).show();
+        }
     }
+
+    public void onEventMainThread(JoinRoomResponse joinRoomResponse) {
+        boolean joined = joinRoomResponse.joined;
+        Log.a("joined room" + joined);
+        Toast.makeText(this, "Joined new session " + joined, Toast.LENGTH_SHORT).show();
+    }
+
 }

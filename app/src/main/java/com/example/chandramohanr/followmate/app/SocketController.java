@@ -6,11 +6,16 @@ import com.example.chandramohanr.followmate.app.controller.SessionEvents;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.example.chandramohanr.followmate.app.models.events.StartSessionRequest;
 import com.example.chandramohanr.followmate.app.models.events.request.JoinSessionRequest;
+import com.example.chandramohanr.followmate.app.models.events.response.SessionStartedEvent;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.noveogroup.android.log.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.URISyntaxException;
 
@@ -28,6 +33,7 @@ public class SocketController {
             mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
             mSocket.on("session_started", new SessionEvents().onSessionStarted);
             mSocket.on("joined_session", new SessionEvents().onJoinedSession);
+            mSocket.on("new_user_joined", new SessionEvents().onNewUserJoined);
             mSocket.connect();
 
         } catch (URISyntaxException e) {
@@ -35,10 +41,8 @@ public class SocketController {
         }
     }
 
-    public void connect(){
-        StartSessionRequest startSessionRequest = new StartSessionRequest();
-        startSessionRequest.userId = AppUtil.getLoggedInUserId();
-        emitEvent(mSocket, "start_session", new Gson().toJson(startSessionRequest));
+    public void connect(JSONObject jsonObject) {
+        emitEvent(mSocket, "start_session", jsonObject);
     }
 
     public void disconnect(){
@@ -47,9 +51,9 @@ public class SocketController {
         }
     }
 
-    public void joinSession(JoinSessionRequest joinSessionRequest){
+    public void joinSession(JSONObject jsonObject){
         if(mSocket != null && mSocket.connected()){
-            emitEvent(mSocket, "join_session",new Gson().toJson(joinSessionRequest));
+            emitEvent(mSocket, "join_session",jsonObject);
         }
     }
 
