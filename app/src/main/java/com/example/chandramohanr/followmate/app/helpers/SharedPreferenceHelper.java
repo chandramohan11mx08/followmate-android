@@ -10,6 +10,8 @@ public class SharedPreferenceHelper {
     public static final String FOLLOWMATE_SHARED_PREF = "com.follomate.app";
 
     public static final String KEY_USER_ID = "uid";
+    public static final String KEY_IS_SESSION_ACTIVE = "isSessionActive";
+    public static final String KEY_ACTIVE_SESSION_ID = "activeSessionId";
 
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;

@@ -1,20 +1,13 @@
 package com.example.chandramohanr.followmate.app;
 
-import com.example.chandramohanr.followmate.app.Constants.SessionContext;
 import com.example.chandramohanr.followmate.app.Constants.UrlConstants;
 import com.example.chandramohanr.followmate.app.controller.SessionEvents;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
-import com.example.chandramohanr.followmate.app.models.events.StartSessionRequest;
-import com.example.chandramohanr.followmate.app.models.events.request.JoinSessionRequest;
-import com.example.chandramohanr.followmate.app.models.events.response.SessionStartedEvent;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.noveogroup.android.log.Log;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
@@ -31,9 +24,12 @@ public class SocketController {
             mSocket = IO.socket(UrlConstants.getServerSocketUrl());
             mSocket.on(Socket.EVENT_CONNECT, onSocketConnectionSuccessful);
             mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
+            mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
+            mSocket.on(Socket.EVENT_RECONNECT, onReconnect);
             mSocket.on("session_started", new SessionEvents().onSessionStarted);
             mSocket.on("joined_session", new SessionEvents().onJoinedSession);
             mSocket.on("new_user_joined", new SessionEvents().onNewUserJoined);
+            mSocket.on("rejoined", new SessionEvents().onRejoined);
             mSocket.connect();
 
         } catch (URISyntaxException e) {
@@ -60,7 +56,11 @@ public class SocketController {
     public Emitter.Listener onSocketConnectionSuccessful = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            if (!AppUtil.isAnySessionActive()) {
+
+            boolean anySessionActive = AppUtil.isAnySessionActive();
+            Log.a("session active "+anySessionActive);
+            if (anySessionActive) {
+                new SessionEvents().rejoinToPreviousActiveSession();
             }
         }
     };
@@ -69,6 +69,20 @@ public class SocketController {
         @Override
         public void call(Object... args) {
             Log.a("socket connection failed");
+        }
+    };
+
+    private Emitter.Listener onDisconnect = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.a("socket disconnect");
+        }
+    };
+
+    private Emitter.Listener onReconnect = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.a("socket reconnect");
         }
     };
 

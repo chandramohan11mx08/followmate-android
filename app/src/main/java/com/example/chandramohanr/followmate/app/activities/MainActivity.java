@@ -21,6 +21,9 @@ import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.example.chandramohanr.followmate.app.models.events.StartSessionRequest;
 import com.example.chandramohanr.followmate.app.models.events.request.JoinSessionRequest;
 import com.example.chandramohanr.followmate.app.models.events.response.JoinRoomResponse;
+import com.example.chandramohanr.followmate.app.models.events.response.NewUserJoinedEvent;
+import com.example.chandramohanr.followmate.app.models.events.response.ReconnectToPreviousLostSession;
+import com.example.chandramohanr.followmate.app.models.events.response.ReconnectedToSession;
 import com.example.chandramohanr.followmate.app.models.events.response.SessionStartedEvent;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -247,15 +250,16 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == JOIN_ACTIVITY_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                requestToJoinSession(data);
+                String sessionId = data.getStringExtra(AppConstants.SESSION_ID);
+                requestToJoinSession(sessionId);
             }
         }
     }
 
-    private void requestToJoinSession(Intent data) {
+    private void requestToJoinSession(String sessionId) {
         JoinSessionRequest joinSessionRequest = new JoinSessionRequest();
         joinSessionRequest.user_id = AppUtil.getLoggedInUserId();
-        joinSessionRequest.session_id = data.getStringExtra(AppConstants.SESSION_ID);
+        joinSessionRequest.session_id = sessionId;
         String json = new Gson().toJson(joinSessionRequest);
         try {
             socketController.joinSession(new JSONObject(json));
@@ -279,4 +283,16 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         Toast.makeText(this, "Joined new session " + joined, Toast.LENGTH_SHORT).show();
     }
 
+    public void onEventMainThread(NewUserJoinedEvent newUserJoinedEvent) {
+        Toast.makeText(this, "New user joined " + newUserJoinedEvent.user_id, Toast.LENGTH_SHORT).show();
+    }
+
+    public void onEventMainThread(ReconnectToPreviousLostSession reconnectToPreviousLostSession) {
+        Toast.makeText(this, "Trying to reconnect to session " + reconnectToPreviousLostSession.sessionId, Toast.LENGTH_SHORT).show();
+        requestToJoinSession(reconnectToPreviousLostSession.sessionId);
+    }
+
+    public void onEventMainThread(ReconnectedToSession reconnectedToSession) {
+        Toast.makeText(this, "Reconnected to previous session " + reconnectedToSession.joined, Toast.LENGTH_SHORT).show();
+    }
 }
