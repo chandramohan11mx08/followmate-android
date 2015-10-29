@@ -254,7 +254,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     private void requestToJoinSession(Intent data) {
         JoinSessionRequest joinSessionRequest = new JoinSessionRequest();
-        joinSessionRequest.used_id = AppUtil.getLoggedInUserId();
+        joinSessionRequest.user_id = AppUtil.getLoggedInUserId();
         joinSessionRequest.session_id = data.getStringExtra(AppConstants.SESSION_ID);
         String json = new Gson().toJson(joinSessionRequest);
         try {
