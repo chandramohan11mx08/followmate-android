@@ -19,6 +19,7 @@ import com.example.chandramohanr.followmate.R;
 import com.example.chandramohanr.followmate.app.Constants.AppConstants;
 import com.example.chandramohanr.followmate.app.SocketController;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
+import com.example.chandramohanr.followmate.app.models.UserLocation;
 import com.example.chandramohanr.followmate.app.models.events.StartSessionRequest;
 import com.example.chandramohanr.followmate.app.models.events.request.JoinSessionRequest;
 import com.example.chandramohanr.followmate.app.models.events.response.JoinRoomResponse;
@@ -38,12 +39,13 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
@@ -55,6 +57,9 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import de.greenrobot.event.EventBus;
 
@@ -70,7 +75,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     private LocationRequest mLocationRequest;
     MapFragment mapFragment;
     GoogleMap map;
-    Marker marker;
+    List<UserMarkerInfo> markers = new ArrayList<>();
 
     EventBus eventBus = EventBus.getDefault();
 
@@ -140,15 +145,42 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     public void setLocation(double lat, double lng) {
-        if (marker != null) {
-            marker.remove();
-        }
-        CameraPosition position = new CameraPosition.Builder()
-                .target(new LatLng(lat, lng)).zoom(15).build();
-        marker = map.addMarker(new MarkerOptions().position(new LatLng(lat, lng)));
-        marker.setTitle("You");
+        String markerTitle = "You";
+        UserLocation userLocation = new UserLocation(lat, lng);
+        setMarker(markerTitle, userLocation, true);
+    }
+
+    public void setMarker(String userId, UserLocation userLocation, boolean isOwner) {
+        Marker marker = map.addMarker(new MarkerOptions().position(new LatLng(userLocation.lat, userLocation.lng)));
+        marker.setTitle(userId);
         marker.showInfoWindow();
-        map.animateCamera(CameraUpdateFactory.newCameraPosition(position));
+        for (int i = 0; i < markers.size(); i++) {
+            UserMarkerInfo userMarkerInfo = markers.get(i);
+            if (userMarkerInfo.userId.equalsIgnoreCase(userId)) {
+                userMarkerInfo.marker.remove();
+                markers.remove(i);
+                break;
+            }
+        }
+        markers.add(new UserMarkerInfo(userId, marker, isOwner));
+        updateMapZoom();
+    }
+
+    public void updateMapZoom() {
+        CameraUpdate cu = null;
+        if (markers.size() == 1) {
+            cu = CameraUpdateFactory.newLatLngZoom(markers.get(0).marker.getPosition(), 15f);
+            map.animateCamera(cu);
+        } else {
+
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            for (UserMarkerInfo userMarkerInfo : markers) {
+                builder.include(userMarkerInfo.marker.getPosition());
+            }
+            LatLngBounds bounds = builder.build();
+            cu = CameraUpdateFactory.newLatLngBounds(bounds, 30);
+            map.moveCamera(cu);
+        }
     }
 
     public static boolean isGPSEnabled(Context mContext) {
@@ -228,6 +260,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     @Click(R.id.start_session)
     public void startNewSession() {
+        resetPreviousSession();
         StartSessionRequest startSessionRequest = new StartSessionRequest();
         startSessionRequest.userId = AppUtil.getLoggedInUserId();
         if (startSessionRequest.userId != null) {
@@ -240,6 +273,10 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         } else {
             Toast.makeText(this, "No user name attached", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void resetPreviousSession() {
+        markers = new ArrayList<>();
     }
 
     @Click(R.id.join_session)
@@ -293,7 +330,9 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     public void onEventMainThread(NewUserJoinedEvent newUserJoinedEvent) {
-        Toast.makeText(this, "New user joined " + newUserJoinedEvent.user_id, Toast.LENGTH_SHORT).show();
+        String user_id = newUserJoinedEvent.user_id;
+        setMarker(user_id, newUserJoinedEvent.userLocation, false);
+        Toast.makeText(this, "New user joined " + user_id, Toast.LENGTH_SHORT).show();
     }
 
     public void onEventMainThread(ReconnectToPreviousLostSession reconnectToPreviousLostSession) {
@@ -302,5 +341,17 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     public void onEventMainThread(ReconnectedToSession reconnectedToSession) {
         Toast.makeText(this, "Reconnected to previous session " + reconnectedToSession.joined, Toast.LENGTH_SHORT).show();
+    }
+
+    class UserMarkerInfo {
+        public String userId;
+        public Marker marker;
+        public boolean isOwner;
+
+        public UserMarkerInfo(String userId, Marker marker, boolean isOwner) {
+            this.userId = userId;
+            this.marker = marker;
+            this.isOwner = isOwner;
+        }
     }
 }
