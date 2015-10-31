@@ -146,6 +146,8 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         CameraPosition position = new CameraPosition.Builder()
                 .target(new LatLng(lat, lng)).zoom(15).build();
         marker = map.addMarker(new MarkerOptions().position(new LatLng(lat, lng)));
+        marker.setTitle("You");
+        marker.showInfoWindow();
         map.animateCamera(CameraUpdateFactory.newCameraPosition(position));
     }
 
