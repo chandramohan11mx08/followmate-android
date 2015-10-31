@@ -11,6 +11,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -272,7 +273,9 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         Log.a("on SessionStartedEvent " + sessionStartedEvent.is_session_created);
         if (sessionStartedEvent.is_session_created) {
             vSessionInfo.setText("code = " + sessionStartedEvent.session_id);
+            vSessionInfo.setVisibility(View.VISIBLE);
         } else {
+            vSessionInfo.setVisibility(View.GONE);
             Toast.makeText(this, sessionStartedEvent.msg, Toast.LENGTH_SHORT).show();
         }
     }

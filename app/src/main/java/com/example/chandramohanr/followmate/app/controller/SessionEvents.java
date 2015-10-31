@@ -5,6 +5,7 @@ import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
 import com.example.chandramohanr.followmate.app.models.events.response.JoinRoomResponse;
 import com.example.chandramohanr.followmate.app.models.events.response.NewUserJoinedEvent;
 import com.example.chandramohanr.followmate.app.models.events.response.ReconnectToPreviousLostSession;
+import com.example.chandramohanr.followmate.app.models.events.response.ReconnectedToSession;
 import com.example.chandramohanr.followmate.app.models.events.response.SessionStartedEvent;
 import com.github.nkzawa.emitter.Emitter;
 
@@ -45,8 +46,8 @@ public class SessionEvents {
     public Emitter.Listener onRejoined = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            NewUserJoinedEvent newUserJoinedEvent = JsonParserHelper.getNewUserJoinedSessionResponseEvent(args[0]);
-            eventBus.post(newUserJoinedEvent);
+            ReconnectedToSession reconnectedToSession = JsonParserHelper.getRejoinedSessionResponseEvent(args[0]);
+            eventBus.post(reconnectedToSession);
         }
     };
 
