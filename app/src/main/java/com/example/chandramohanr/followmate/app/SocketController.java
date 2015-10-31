@@ -49,7 +49,13 @@ public class SocketController {
 
     public void joinSession(JSONObject jsonObject){
         if(mSocket != null && mSocket.connected()){
-            emitEvent(mSocket, "join_session",jsonObject);
+            emitEvent(mSocket, "join_session", jsonObject);
+        }
+    }
+
+    public void rejoinSession(JSONObject jsonObject){
+        if(mSocket != null && mSocket.connected()){
+            emitEvent(mSocket, "rejoin_session",jsonObject);
         }
     }
 

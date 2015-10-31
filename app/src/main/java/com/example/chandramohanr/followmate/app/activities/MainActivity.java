@@ -252,18 +252,23 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         if (requestCode == JOIN_ACTIVITY_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 String sessionId = data.getStringExtra(AppConstants.SESSION_ID);
-                requestToJoinSession(sessionId);
+                requestToJoinSession(sessionId, false);
             }
         }
     }
 
-    private void requestToJoinSession(String sessionId) {
+    private void requestToJoinSession(String sessionId, boolean isRejoin) {
         JoinSessionRequest joinSessionRequest = new JoinSessionRequest();
         joinSessionRequest.user_id = AppUtil.getLoggedInUserId();
         joinSessionRequest.session_id = sessionId;
         String json = new Gson().toJson(joinSessionRequest);
         try {
-            socketController.joinSession(new JSONObject(json));
+            JSONObject jsonObject = new JSONObject(json);
+            if(isRejoin){
+                socketController.rejoinSession(jsonObject);
+            }else{
+                socketController.joinSession(jsonObject);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -282,7 +287,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     public void onEventMainThread(JoinRoomResponse joinRoomResponse) {
         boolean joined = joinRoomResponse.joined;
-        Log.a("joined room" + joined);
         Toast.makeText(this, "Joined new session " + joined, Toast.LENGTH_SHORT).show();
     }
 
@@ -291,8 +295,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     public void onEventMainThread(ReconnectToPreviousLostSession reconnectToPreviousLostSession) {
-        Toast.makeText(this, "Trying to reconnect to session " + reconnectToPreviousLostSession.sessionId, Toast.LENGTH_SHORT).show();
-        requestToJoinSession(reconnectToPreviousLostSession.sessionId);
+        requestToJoinSession(reconnectToPreviousLostSession.sessionId, true);
     }
 
     public void onEventMainThread(ReconnectedToSession reconnectedToSession) {
