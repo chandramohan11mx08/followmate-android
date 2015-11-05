@@ -1,23 +1,30 @@
 package com.example.chandramohanr.followmate.app;
 
+import android.content.Context;
+import android.content.Intent;
+
+import com.example.chandramohanr.followmate.app.Constants.AppConstants;
 import com.example.chandramohanr.followmate.app.Constants.UrlConstants;
 import com.example.chandramohanr.followmate.app.controller.SessionEvents;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
-import com.example.chandramohanr.followmate.app.models.events.DisconnectRequest;
+import com.example.chandramohanr.followmate.app.services.UserService;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
-import com.google.gson.Gson;
 import com.noveogroup.android.log.Log;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
 
 public class SocketController {
     private Socket mSocket;
+    private Context context;
+
+    public SocketController(Context context){
+        this.context = context;
+    }
 
     public void initSession(){
         if (mSocket != null && mSocket.connected()) {
@@ -88,15 +95,11 @@ public class SocketController {
             Log.a("socket disconnect");
             boolean anySessionActive = AppUtil.isAnySessionActive();
             if (anySessionActive) {
-                DisconnectRequest disconnectRequest = new DisconnectRequest();
-                disconnectRequest.session_id = SharedPreferenceHelper.getString(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID);
-                disconnectRequest.user_id = AppUtil.getLoggedInUserId();
-                String jsonString = new Gson().toJson(disconnectRequest);
-                try {
-                    emitEvent(mSocket, "session_disconnected", new JSONObject(jsonString));
-                } catch (JSONException e) {
-                    Log.a("Error in diconnect event");
-                }
+                Intent intent = new Intent(context, UserService.class);
+                intent.putExtra(AppConstants.SERVICE_TYPE, UserService.DROP_SESSION_API);
+                intent.putExtra(AppConstants.SESSION_ID, SharedPreferenceHelper.getString(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID));
+                intent.putExtra(AppConstants.USER_ID, AppUtil.getLoggedInUserId());
+                context.startService(intent);
             }
         }
     };

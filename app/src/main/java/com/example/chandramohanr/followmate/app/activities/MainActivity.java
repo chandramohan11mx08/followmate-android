@@ -22,6 +22,7 @@ import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.example.chandramohanr.followmate.app.models.UserLocation;
 import com.example.chandramohanr.followmate.app.models.events.StartSessionRequest;
 import com.example.chandramohanr.followmate.app.models.events.request.JoinSessionRequest;
+import com.example.chandramohanr.followmate.app.models.events.response.DropUserFromSessionResponse;
 import com.example.chandramohanr.followmate.app.models.events.response.JoinRoomResponse;
 import com.example.chandramohanr.followmate.app.models.events.response.NewUserJoinedEvent;
 import com.example.chandramohanr.followmate.app.models.events.response.ReconnectToPreviousLostSession;
@@ -81,7 +82,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     private static int JOIN_ACTIVITY_REQUEST_CODE = 1;
 
-    SocketController socketController = new SocketController();
+    SocketController socketController = new SocketController(this);
 
     @Override
     public void onCreate(Bundle bundle){
@@ -344,6 +345,10 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     public void onEventMainThread(ReconnectedToSession reconnectedToSession) {
         Log.a("Reconnected to previous session " + reconnectedToSession.joined);
+    }
+
+    public void onEventMainThread(DropUserFromSessionResponse dropUserFromSessionResponse) {
+        Log.a("Drop notified to server" + dropUserFromSessionResponse.updated);
     }
 
     class UserMarkerInfo {

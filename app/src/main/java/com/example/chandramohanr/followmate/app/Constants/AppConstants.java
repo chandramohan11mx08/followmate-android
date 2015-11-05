@@ -5,4 +5,5 @@ public final class AppConstants {
     public static String MOBILE_NUMBER = "m_num";
     public static String DEVICE_ID = "device_id";
     public static String SESSION_ID = "session_id";
+    public static String USER_ID = "user_id";
 }
