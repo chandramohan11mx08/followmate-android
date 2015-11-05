@@ -76,6 +76,8 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     private LocationRequest mLocationRequest;
     MapFragment mapFragment;
     GoogleMap map;
+    Location lastKnownlocation;
+
     List<UserMarkerInfo> markers = new ArrayList<>();
 
     EventBus eventBus = EventBus.getDefault();
@@ -255,6 +257,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     @Override
     public void onLocationChanged(Location location) {
         if (location != null) {
+            lastKnownlocation = location;
             setLocation(location.getLatitude(), location.getLongitude());
         }
     }
@@ -262,8 +265,10 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     @Click(R.id.start_session)
     public void startNewSession() {
         resetPreviousSession();
-        StartSessionRequest startSessionRequest = new StartSessionRequest();
-        startSessionRequest.userId = AppUtil.getLoggedInUserId();
+        String loggedInUserId = AppUtil.getLoggedInUserId();
+        StartSessionRequest startSessionRequest = new StartSessionRequest(loggedInUserId, getLastKnownUserLocation());
+
+        startSessionRequest.userId = loggedInUserId;
         if (startSessionRequest.userId != null) {
             String json = new Gson().toJson(startSessionRequest);
             try {
@@ -300,16 +305,25 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         }
     }
 
+    public UserLocation getLastKnownUserLocation(){
+        Double latitude = null;
+        Double longitude = null;
+        if (lastKnownlocation != null) {
+            latitude = lastKnownlocation.getLatitude();
+            longitude = lastKnownlocation.getLongitude();
+        }
+        return new UserLocation(latitude, longitude);
+    }
+
     private void requestToJoinSession(String sessionId, boolean isRejoin) {
-        JoinSessionRequest joinSessionRequest = new JoinSessionRequest();
-        joinSessionRequest.user_id = AppUtil.getLoggedInUserId();
-        joinSessionRequest.session_id = sessionId;
+        String loggedInUserId = AppUtil.getLoggedInUserId();
+        JoinSessionRequest joinSessionRequest = new JoinSessionRequest(sessionId, loggedInUserId, getLastKnownUserLocation());
         String json = new Gson().toJson(joinSessionRequest);
         try {
             JSONObject jsonObject = new JSONObject(json);
-            if(isRejoin){
+            if (isRejoin) {
                 socketController.rejoinSession(jsonObject);
-            }else{
+            } else {
                 socketController.joinSession(jsonObject);
             }
         } catch (JSONException e) {
