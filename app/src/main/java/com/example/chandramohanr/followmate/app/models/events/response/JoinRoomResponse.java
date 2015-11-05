@@ -6,5 +6,5 @@ import java.util.List;
 
 public class JoinRoomResponse {
     public boolean joined;
-    public List<ParticipantInfo> participantInfoList;
+    public List<ParticipantInfo> participants;
 }
