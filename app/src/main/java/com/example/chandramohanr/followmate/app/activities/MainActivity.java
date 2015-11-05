@@ -107,8 +107,8 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         googleApiClient.connect();
         mLocationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(1 * 1000)
-                .setFastestInterval(1 * 1000);
+                .setInterval(3 * 1000)
+                .setFastestInterval(3 * 1000);
 
         if (isGPSEnabled(activity)) {
             Log.a("GPS is on");
@@ -276,6 +276,9 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     private void resetPreviousSession() {
+        if(map!=null){
+            map.clear();
+        }
         markers = new ArrayList<>();
     }
 
@@ -340,7 +343,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     public void onEventMainThread(ReconnectedToSession reconnectedToSession) {
-        Toast.makeText(this, "Reconnected to previous session " + reconnectedToSession.joined, Toast.LENGTH_SHORT).show();
+        Log.a("Reconnected to previous session " + reconnectedToSession.joined);
     }
 
     class UserMarkerInfo {

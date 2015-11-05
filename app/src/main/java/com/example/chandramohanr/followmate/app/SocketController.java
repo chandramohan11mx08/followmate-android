@@ -3,11 +3,15 @@ package com.example.chandramohanr.followmate.app;
 import com.example.chandramohanr.followmate.app.Constants.UrlConstants;
 import com.example.chandramohanr.followmate.app.controller.SessionEvents;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
+import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
+import com.example.chandramohanr.followmate.app.models.events.DisconnectRequest;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
+import com.google.gson.Gson;
 import com.noveogroup.android.log.Log;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
@@ -82,6 +86,18 @@ public class SocketController {
         @Override
         public void call(Object... args) {
             Log.a("socket disconnect");
+            boolean anySessionActive = AppUtil.isAnySessionActive();
+            if (anySessionActive) {
+                DisconnectRequest disconnectRequest = new DisconnectRequest();
+                disconnectRequest.session_id = SharedPreferenceHelper.getString(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID);
+                disconnectRequest.user_id = AppUtil.getLoggedInUserId();
+                String jsonString = new Gson().toJson(disconnectRequest);
+                try {
+                    emitEvent(mSocket, "session_disconnected", new JSONObject(jsonString));
+                } catch (JSONException e) {
+                    Log.a("Error in diconnect event");
+                }
+            }
         }
     };
 
