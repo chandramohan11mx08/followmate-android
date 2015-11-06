@@ -6,6 +6,7 @@ public class AppUtil {
     }
 
     public static boolean isAnySessionActive() {
-        return SharedPreferenceHelper.getBoolean(SharedPreferenceHelper.KEY_IS_SESSION_ACTIVE);
+        String string = SharedPreferenceHelper.getString(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID);
+        return (string!=null && !string.isEmpty());
     }
 }

@@ -20,7 +20,6 @@ public class SessionEvents {
         public void call(Object... args) {
             SessionStartedEvent sessionStartedEvent = JsonParserHelper.getSessionStartedEvent(args[0]);
             if (sessionStartedEvent.is_session_created) {
-                SharedPreferenceHelper.set(SharedPreferenceHelper.KEY_IS_SESSION_ACTIVE, true);
                 SharedPreferenceHelper.set(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID, sessionStartedEvent.session_id);
             }
             eventBus.post(sessionStartedEvent);

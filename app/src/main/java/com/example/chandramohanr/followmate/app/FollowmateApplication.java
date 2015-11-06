@@ -18,7 +18,6 @@ public class FollowmateApplication extends Application{
         if (BuildConfig.DEBUG) {
             Stetho.initializeWithDefaults(this);
         }
-        SharedPreferenceHelper.deleteSharedPreference(SharedPreferenceHelper.KEY_IS_SESSION_ACTIVE);
         SharedPreferenceHelper.deleteSharedPreference(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID);
     }
 

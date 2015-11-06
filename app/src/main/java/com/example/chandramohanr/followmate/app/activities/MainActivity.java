@@ -19,6 +19,7 @@ import com.example.chandramohanr.followmate.R;
 import com.example.chandramohanr.followmate.app.Constants.AppConstants;
 import com.example.chandramohanr.followmate.app.SocketController;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
+import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
 import com.example.chandramohanr.followmate.app.models.ParticipantInfo;
 import com.example.chandramohanr.followmate.app.models.UserLocation;
 import com.example.chandramohanr.followmate.app.models.events.StartSessionRequest;
@@ -287,6 +288,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
             map.clear();
         }
         markers = new ArrayList<>();
+        SharedPreferenceHelper.deleteSharedPreference(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID);
     }
 
     @Click(R.id.join_session)
@@ -344,10 +346,13 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     public void onEventMainThread(JoinRoomResponse joinRoomResponse) {
+        resetPreviousSession();
         boolean joined = joinRoomResponse.joined;
         Toast.makeText(this, "Joined new session " + joined, Toast.LENGTH_SHORT).show();
         if(joined){
+            SharedPreferenceHelper.set(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID, joinRoomResponse.session_id);
             for (ParticipantInfo participantInfo : joinRoomResponse.participants) {
+                setMarker(participantInfo.user_id, participantInfo.latest_location, false);
                 Log.a("user info " + participantInfo.user_id + " location " + participantInfo.latest_location.lat + " " + participantInfo.latest_location.lng);
             }
         }
