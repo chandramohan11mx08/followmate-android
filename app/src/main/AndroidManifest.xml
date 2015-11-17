@@ -39,7 +39,13 @@
 
         <activity
             android:name=".app.activities.MainActivity_"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="http" android:host="www.followmate.com" android:pathPattern="/join/.*"/>
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".app.activities.AuthenticateJoinActivity_"

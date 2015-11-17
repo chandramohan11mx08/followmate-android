@@ -144,11 +144,21 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
             }
         }
         Location location = locationManager.getLastKnownLocation(provider);
-
         if (location != null) {
             setLocation(location);
         }
         socketController.initSession();
+
+        Intent intent = getIntent();
+        String action = intent.getAction();
+
+        if (Intent.ACTION_VIEW.equals(action)) {
+            final List<String> segments = intent.getData().getPathSegments();
+            if (segments.size() > 1) {
+                String sessionId = segments.get(1);
+                requestToJoinSession(sessionId, false);
+            }
+        }
     }
 
     public void setLocation(Location location) {
@@ -375,10 +385,18 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         Toast.makeText(this, "Joined new session " + joined, Toast.LENGTH_SHORT).show();
         if(joined){
             SharedPreferenceHelper.set(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID, joinRoomResponse.session_id);
-            for (ParticipantInfo participantInfo : joinRoomResponse.participants) {
-                setMarker(participantInfo.user_id, participantInfo.latest_location, false);
-                Log.a("user info " + participantInfo.user_id + " location " + participantInfo.latest_location.lat + " " + participantInfo.latest_location.lng);
-            }
+            setParticipantInfo(joinRoomResponse.participants);
+        }
+    }
+
+    private void setParticipantInfo(List<ParticipantInfo> participantInfoList) {
+        if(map!=null){
+            map.clear();
+        }
+        markers = new ArrayList<>();
+        for (ParticipantInfo participantInfo : participantInfoList) {
+            setMarker(participantInfo.user_id, participantInfo.latest_location, false);
+            Log.a("user info " + participantInfo.user_id + " location " + participantInfo.latest_location.lat + " " + participantInfo.latest_location.lng);
         }
     }
 
@@ -394,6 +412,9 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     public void onEventMainThread(ReconnectedToSession reconnectedToSession) {
         Log.a("Reconnected to previous session " + reconnectedToSession.joined);
+        if(reconnectedToSession.joined){
+            setParticipantInfo(reconnectedToSession.participantInfoList);
+        }
     }
 
     public void onEventMainThread(DropUserFromSessionResponse dropUserFromSessionResponse) {
@@ -401,7 +422,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     public void onEventMainThread(ShareLocationInfo shareLocationInfo){
-        Log.a("User new location "+new Gson().toJson(shareLocationInfo));
         setMarker(shareLocationInfo.user_id, shareLocationInfo.userLocation, false);
     }
 
