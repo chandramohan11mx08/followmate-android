@@ -152,7 +152,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     public void setLocation(Location location) {
-        String markerTitle = "You";
+        String markerTitle = AppUtil.getLoggedInUserId();
         UserLocation userLocation;
         if(lastKnownlocation != null){
              userLocation = new UserLocation(location.getLatitude(), location.getLongitude(), lastKnownlocation.bearingTo(location));
@@ -161,8 +161,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         }
         lastKnownlocation = location;
         boolean anySessionActive = AppUtil.isAnySessionActive();
-        if(anySessionActive)
-        {
+        if (anySessionActive) {
             shareMyLocation(userLocation);
         }
         setMarker(markerTitle, userLocation, true);
@@ -180,7 +179,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     public void setMarker(String userId, UserLocation userLocation, boolean isOwner) {
         Marker marker = map.addMarker(new MarkerOptions().position(new LatLng(userLocation.lat, userLocation.lng)));
-        marker.setTitle(userId);
+        marker.setTitle(isOwner ? "You" : userId);
         marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_navigation_black_24dp));
         marker.setFlat(true);
         marker.setRotation(userLocation.bearingTo);
