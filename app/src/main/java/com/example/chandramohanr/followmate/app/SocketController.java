@@ -40,6 +40,7 @@ public class SocketController {
             mSocket.on("session_started", new SessionEvents().onSessionStarted);
             mSocket.on("joined_session", new SessionEvents().onJoinedSession);
             mSocket.on("new_user_joined", new SessionEvents().onNewUserJoined);
+            mSocket.on("user_location", new SessionEvents().onUserLocationUpdate);
             mSocket.on("rejoined", new SessionEvents().onRejoined);
             mSocket.connect();
 
@@ -50,6 +51,10 @@ public class SocketController {
 
     public void connect(JSONObject jsonObject) {
         emitEvent(mSocket, "start_session", jsonObject);
+    }
+
+    public void shareLocation(JSONObject jsonObject){
+        emitEvent(mSocket, "share_location",jsonObject);
     }
 
     public void disconnect(){

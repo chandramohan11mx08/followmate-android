@@ -1,5 +1,6 @@
 package com.example.chandramohanr.followmate.app.helpers;
 
+import com.example.chandramohanr.followmate.app.models.events.ShareLocationInfo;
 import com.example.chandramohanr.followmate.app.models.events.response.JoinRoomResponse;
 import com.example.chandramohanr.followmate.app.models.events.response.NewUserJoinedEvent;
 import com.example.chandramohanr.followmate.app.models.events.response.ReconnectedToSession;
@@ -18,6 +19,10 @@ public class JsonParserHelper {
 
     public static NewUserJoinedEvent getNewUserJoinedSessionResponseEvent(Object arg) {
         return new Gson().fromJson(arg.toString(), NewUserJoinedEvent.class);
+    }
+
+    public static ShareLocationInfo getUserLocationResponseEvent(Object arg) {
+        return new Gson().fromJson(arg.toString(), ShareLocationInfo.class);
     }
 
     public static ReconnectedToSession getRejoinedSessionResponseEvent(Object arg) {

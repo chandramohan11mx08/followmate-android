@@ -6,17 +6,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.graphics.Point;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.SystemClock;
 import android.view.View;
-import android.view.animation.Interpolator;
-import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +22,7 @@ import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
 import com.example.chandramohanr.followmate.app.models.ParticipantInfo;
 import com.example.chandramohanr.followmate.app.models.UserLocation;
+import com.example.chandramohanr.followmate.app.models.events.ShareLocationInfo;
 import com.example.chandramohanr.followmate.app.models.events.StartSessionRequest;
 import com.example.chandramohanr.followmate.app.models.events.request.JoinSessionRequest;
 import com.example.chandramohanr.followmate.app.models.events.response.DropUserFromSessionResponse;
@@ -52,7 +48,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -165,14 +160,28 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
              userLocation = new UserLocation(location.getLatitude(), location.getLongitude(), 0);
         }
         lastKnownlocation = location;
+        boolean anySessionActive = AppUtil.isAnySessionActive();
+        if(anySessionActive)
+        {
+            shareMyLocation(userLocation);
+        }
         setMarker(markerTitle, userLocation, true);
+    }
+
+    private void shareMyLocation(UserLocation userLocation) {
+        ShareLocationInfo shareLocationInfo = new ShareLocationInfo(AppUtil.getLoggedInUserId(), AppUtil.getSessionId(),userLocation);
+        String json = new Gson().toJson(shareLocationInfo);
+        try {
+            socketController.shareLocation(new JSONObject(json));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setMarker(String userId, UserLocation userLocation, boolean isOwner) {
         Marker marker = map.addMarker(new MarkerOptions().position(new LatLng(userLocation.lat, userLocation.lng)));
         marker.setTitle(userId);
         marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_navigation_black_24dp));
-        marker.showInfoWindow();
         marker.setFlat(true);
         marker.setRotation(userLocation.bearingTo);
         for (int i = 0; i < markers.size(); i++) {
@@ -312,44 +321,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         startActivityForResult(intent, JOIN_ACTIVITY_REQUEST_CODE);
     }
 
-    public void animateMarker(final Marker marker, final LatLng toPosition,
-                              final boolean hideMarker) {
-        final Handler handler = new Handler();
-        final long start = SystemClock.uptimeMillis();
-        Projection proj = map.getProjection();
-        Point startPoint = proj.toScreenLocation(marker.getPosition());
-        final LatLng startLatLng = proj.fromScreenLocation(startPoint);
-        final long duration = 500;
-
-        final Interpolator interpolator = new LinearInterpolator();
-
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                long elapsed = SystemClock.uptimeMillis() - start;
-                float t = interpolator.getInterpolation((float) elapsed
-                        / duration);
-                double lng = t * toPosition.longitude + (1 - t)
-                        * startLatLng.longitude;
-                double lat = t * toPosition.latitude + (1 - t)
-                        * startLatLng.latitude;
-                marker.setPosition(new LatLng(lat, lng));
-
-                if (t < 1.0) {
-                    // Post again 16ms later.
-                    handler.postDelayed(this, 16);
-                } else {
-                    if (hideMarker) {
-                        marker.setVisible(false);
-                    } else {
-                        marker.setVisible(true);
-                    }
-                }
-            }
-        });
-    }
-
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -390,6 +361,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     public void onEventMainThread(SessionStartedEvent sessionStartedEvent) {
         Log.a("on SessionStartedEvent " + sessionStartedEvent.is_session_created);
         if (sessionStartedEvent.is_session_created) {
+            SharedPreferenceHelper.set(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID, sessionStartedEvent.session_id);
             vSessionInfo.setText("code = " + sessionStartedEvent.session_id);
             vSessionInfo.setVisibility(View.VISIBLE);
         } else {
@@ -428,6 +400,12 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     public void onEventMainThread(DropUserFromSessionResponse dropUserFromSessionResponse) {
         Log.a("Drop notified to server" + dropUserFromSessionResponse.updated);
     }
+
+    public void onEventMainThread(ShareLocationInfo shareLocationInfo){
+        Log.a("User new location "+new Gson().toJson(shareLocationInfo));
+        setMarker(shareLocationInfo.user_id, shareLocationInfo.userLocation, false);
+    }
+
 
     class UserMarkerInfo {
         public String userId;

@@ -6,7 +6,11 @@ public class AppUtil {
     }
 
     public static boolean isAnySessionActive() {
-        String string = SharedPreferenceHelper.getString(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID);
+        String string = getSessionId();
         return (string!=null && !string.isEmpty());
+    }
+
+    public static String getSessionId() {
+         return SharedPreferenceHelper.getString(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID);
     }
 }

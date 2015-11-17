@@ -2,6 +2,7 @@ package com.example.chandramohanr.followmate.app.controller;
 
 import com.example.chandramohanr.followmate.app.helpers.JsonParserHelper;
 import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
+import com.example.chandramohanr.followmate.app.models.events.ShareLocationInfo;
 import com.example.chandramohanr.followmate.app.models.events.response.JoinRoomResponse;
 import com.example.chandramohanr.followmate.app.models.events.response.NewUserJoinedEvent;
 import com.example.chandramohanr.followmate.app.models.events.response.ReconnectToPreviousLostSession;
@@ -39,6 +40,14 @@ public class SessionEvents {
         public void call(Object... args) {
             NewUserJoinedEvent newUserJoinedEvent = JsonParserHelper.getNewUserJoinedSessionResponseEvent(args[0]);
             eventBus.post(newUserJoinedEvent);
+        }
+    };
+
+    public Emitter.Listener onUserLocationUpdate = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            ShareLocationInfo userLocationUpdateInfo = JsonParserHelper.getUserLocationResponseEvent(args[0]);
+            eventBus.post(userLocationUpdateInfo);
         }
     };
 
