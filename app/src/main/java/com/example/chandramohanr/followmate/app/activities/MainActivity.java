@@ -6,12 +6,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.graphics.Point;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.view.View;
+import android.view.animation.Interpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,6 +52,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -144,21 +151,30 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         Location location = locationManager.getLastKnownLocation(provider);
 
         if (location != null) {
-            setLocation(location.getLatitude(), location.getLongitude());
+            setLocation(location);
         }
         socketController.initSession();
     }
 
-    public void setLocation(double lat, double lng) {
+    public void setLocation(Location location) {
         String markerTitle = "You";
-        UserLocation userLocation = new UserLocation(lat, lng);
+        UserLocation userLocation;
+        if(lastKnownlocation != null){
+             userLocation = new UserLocation(location.getLatitude(), location.getLongitude(), lastKnownlocation.bearingTo(location));
+        }else{
+             userLocation = new UserLocation(location.getLatitude(), location.getLongitude(), 0);
+        }
+        lastKnownlocation = location;
         setMarker(markerTitle, userLocation, true);
     }
 
     public void setMarker(String userId, UserLocation userLocation, boolean isOwner) {
         Marker marker = map.addMarker(new MarkerOptions().position(new LatLng(userLocation.lat, userLocation.lng)));
         marker.setTitle(userId);
+        marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_navigation_black_24dp));
         marker.showInfoWindow();
+        marker.setFlat(true);
+        marker.setRotation(userLocation.bearingTo);
         for (int i = 0; i < markers.size(); i++) {
             UserMarkerInfo userMarkerInfo = markers.get(i);
             if (userMarkerInfo.userId.equalsIgnoreCase(userId)) {
@@ -259,8 +275,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     @Override
     public void onLocationChanged(Location location) {
         if (location != null) {
-            lastKnownlocation = location;
-            setLocation(location.getLatitude(), location.getLongitude());
+            setLocation(location);
         }
     }
 
@@ -297,6 +312,44 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         startActivityForResult(intent, JOIN_ACTIVITY_REQUEST_CODE);
     }
 
+    public void animateMarker(final Marker marker, final LatLng toPosition,
+                              final boolean hideMarker) {
+        final Handler handler = new Handler();
+        final long start = SystemClock.uptimeMillis();
+        Projection proj = map.getProjection();
+        Point startPoint = proj.toScreenLocation(marker.getPosition());
+        final LatLng startLatLng = proj.fromScreenLocation(startPoint);
+        final long duration = 500;
+
+        final Interpolator interpolator = new LinearInterpolator();
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                long elapsed = SystemClock.uptimeMillis() - start;
+                float t = interpolator.getInterpolation((float) elapsed
+                        / duration);
+                double lng = t * toPosition.longitude + (1 - t)
+                        * startLatLng.longitude;
+                double lat = t * toPosition.latitude + (1 - t)
+                        * startLatLng.latitude;
+                marker.setPosition(new LatLng(lat, lng));
+
+                if (t < 1.0) {
+                    // Post again 16ms later.
+                    handler.postDelayed(this, 16);
+                } else {
+                    if (hideMarker) {
+                        marker.setVisible(false);
+                    } else {
+                        marker.setVisible(true);
+                    }
+                }
+            }
+        });
+    }
+
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -315,7 +368,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
             latitude = lastKnownlocation.getLatitude();
             longitude = lastKnownlocation.getLongitude();
         }
-        return new UserLocation(latitude, longitude);
+        return new UserLocation(latitude, longitude, 0);
     }
 
     private void requestToJoinSession(String sessionId, boolean isRejoin) {
