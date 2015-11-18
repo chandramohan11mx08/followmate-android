@@ -11,6 +11,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -89,6 +90,9 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     private static int JOIN_ACTIVITY_REQUEST_CODE = 1;
 
     SocketController socketController = new SocketController(this);
+    boolean shareMyLocation = true;
+    Marker myMarker;
+    String loggedInUserId = AppUtil.getLoggedInUserId();
 
     @Override
     public void onCreate(Bundle bundle){
@@ -162,23 +166,27 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     public void setLocation(Location location) {
-        String markerTitle = AppUtil.getLoggedInUserId();
+        String markerTitle = loggedInUserId;
         UserLocation userLocation;
-        if(lastKnownlocation != null){
-             userLocation = new UserLocation(location.getLatitude(), location.getLongitude(), lastKnownlocation.bearingTo(location));
-        }else{
-             userLocation = new UserLocation(location.getLatitude(), location.getLongitude(), 0);
+        if (lastKnownlocation != null) {
+            userLocation = new UserLocation(location.getLatitude(), location.getLongitude(), lastKnownlocation.bearingTo(location));
+        } else {
+            userLocation = new UserLocation(location.getLatitude(), location.getLongitude(), 0);
         }
         lastKnownlocation = location;
         boolean anySessionActive = AppUtil.isAnySessionActive();
         if (anySessionActive) {
             shareMyLocation(userLocation);
         }
-        setMarker(markerTitle, userLocation, true);
+        if(myMarker != null){
+            myMarker.remove();
+        }
+        myMarker = getMarker(loggedInUserId, userLocation, true);
+        setMarker(markerTitle, myMarker);
     }
 
     private void shareMyLocation(UserLocation userLocation) {
-        ShareLocationInfo shareLocationInfo = new ShareLocationInfo(AppUtil.getLoggedInUserId(), AppUtil.getSessionId(),userLocation);
+        ShareLocationInfo shareLocationInfo = new ShareLocationInfo(loggedInUserId, AppUtil.getSessionId(),userLocation);
         String json = new Gson().toJson(shareLocationInfo);
         try {
             socketController.shareLocation(new JSONObject(json));
@@ -187,12 +195,12 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         }
     }
 
-    public void setMarker(String userId, UserLocation userLocation, boolean isOwner) {
-        Marker marker = map.addMarker(new MarkerOptions().position(new LatLng(userLocation.lat, userLocation.lng)));
-        marker.setTitle(isOwner ? "You" : userId);
-        marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_navigation_black_24dp));
-        marker.setFlat(true);
-        marker.setRotation(userLocation.bearingTo);
+    public void updateMarkerLocation(String userId, UserLocation userLocation, boolean isOwner){
+        Marker marker = getMarker(userId, userLocation, isOwner);
+        setMarker(userId, marker);
+    }
+
+    public void setMarker(String userId, Marker marker) {
         for (int i = 0; i < markers.size(); i++) {
             UserMarkerInfo userMarkerInfo = markers.get(i);
             if (userMarkerInfo.userId.equalsIgnoreCase(userId)) {
@@ -201,8 +209,18 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
                 break;
             }
         }
-        markers.add(new UserMarkerInfo(userId, marker, isOwner));
+        markers.add(new UserMarkerInfo(userId, marker));
         updateMapZoom();
+    }
+
+    @NonNull
+    private Marker getMarker(String userId, UserLocation userLocation, boolean isOwner) {
+        Marker marker = map.addMarker(new MarkerOptions().position(new LatLng(userLocation.lat, userLocation.lng)));
+        marker.setTitle(isOwner ? "You" : userId);
+        marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_navigation_black_24dp));
+        marker.setFlat(true);
+        marker.setRotation(userLocation.bearingTo);
+        return marker;
     }
 
     public void updateMapZoom() {
@@ -216,6 +234,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
             for (UserMarkerInfo userMarkerInfo : markers) {
                 builder.include(userMarkerInfo.marker.getPosition());
             }
+            builder.include(myMarker.getPosition());
             LatLngBounds bounds = builder.build();
             cu = CameraUpdateFactory.newLatLngBounds(bounds, 30);
             map.moveCamera(cu);
@@ -292,7 +311,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     @Override
     public void onLocationChanged(Location location) {
-        if (location != null) {
+        if (location != null && shareMyLocation) {
             setLocation(location);
         }
     }
@@ -300,7 +319,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     @Click(R.id.start_session)
     public void startNewSession() {
         resetPreviousSession();
-        String loggedInUserId = AppUtil.getLoggedInUserId();
         StartSessionRequest startSessionRequest = new StartSessionRequest(loggedInUserId, getLastKnownUserLocation());
 
         startSessionRequest.userId = loggedInUserId;
@@ -352,7 +370,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     private void requestToJoinSession(String sessionId, boolean isRejoin) {
-        String loggedInUserId = AppUtil.getLoggedInUserId();
         JoinSessionRequest joinSessionRequest = new JoinSessionRequest(sessionId, loggedInUserId, getLastKnownUserLocation());
         String json = new Gson().toJson(joinSessionRequest);
         try {
@@ -364,6 +381,17 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
             }
         } catch (JSONException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void setParticipantInfo(List<ParticipantInfo> participantInfoList) {
+        if(map!=null){
+            map.clear();
+        }
+        markers = new ArrayList<>();
+        for (ParticipantInfo participantInfo : participantInfoList) {
+            updateMarkerLocation(participantInfo.user_id, participantInfo.latest_location, false);
+            Log.a("user info " + participantInfo.user_id + " location " + participantInfo.latest_location.lat + " " + participantInfo.latest_location.lng);
         }
     }
 
@@ -389,20 +417,9 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         }
     }
 
-    private void setParticipantInfo(List<ParticipantInfo> participantInfoList) {
-        if(map!=null){
-            map.clear();
-        }
-        markers = new ArrayList<>();
-        for (ParticipantInfo participantInfo : participantInfoList) {
-            setMarker(participantInfo.user_id, participantInfo.latest_location, false);
-            Log.a("user info " + participantInfo.user_id + " location " + participantInfo.latest_location.lat + " " + participantInfo.latest_location.lng);
-        }
-    }
-
     public void onEventMainThread(NewUserJoinedEvent newUserJoinedEvent) {
         String user_id = newUserJoinedEvent.user_id;
-        setMarker(user_id, newUserJoinedEvent.userLocation, false);
+        updateMarkerLocation(user_id, newUserJoinedEvent.userLocation, false);
         Toast.makeText(this, "New user joined " + user_id, Toast.LENGTH_SHORT).show();
     }
 
@@ -422,19 +439,17 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     public void onEventMainThread(ShareLocationInfo shareLocationInfo){
-        setMarker(shareLocationInfo.user_id, shareLocationInfo.userLocation, false);
+        updateMarkerLocation(shareLocationInfo.user_id, shareLocationInfo.userLocation, false);
     }
 
 
     class UserMarkerInfo {
         public String userId;
         public Marker marker;
-        public boolean isOwner;
 
-        public UserMarkerInfo(String userId, Marker marker, boolean isOwner) {
+        public UserMarkerInfo(String userId, Marker marker) {
             this.userId = userId;
             this.marker = marker;
-            this.isOwner = isOwner;
         }
     }
 }
