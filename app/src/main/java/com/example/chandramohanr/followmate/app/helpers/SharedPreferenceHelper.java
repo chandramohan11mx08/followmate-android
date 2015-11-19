@@ -11,6 +11,7 @@ public class SharedPreferenceHelper {
 
     public static final String KEY_USER_ID = "uid";
     public static final String KEY_ACTIVE_SESSION_ID = "activeSessionId";
+    public static final String KEY_ACTIVE_SESSION_OWNER = "isActiveSessionOwner";
 
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;

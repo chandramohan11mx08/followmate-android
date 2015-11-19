@@ -4,7 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.example.chandramohanr.followmate.BuildConfig;
-import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
+import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.facebook.stetho.Stetho;
 
 public class FollowmateApplication extends Application{
@@ -18,7 +18,7 @@ public class FollowmateApplication extends Application{
         if (BuildConfig.DEBUG) {
             Stetho.initializeWithDefaults(this);
         }
-        SharedPreferenceHelper.deleteSharedPreference(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID);
+        AppUtil.resetSessionInfo();
     }
 
     public static Context getContext(){

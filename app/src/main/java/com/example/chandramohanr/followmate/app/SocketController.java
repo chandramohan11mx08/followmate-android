@@ -80,7 +80,6 @@ public class SocketController {
         public void call(Object... args) {
 
             boolean anySessionActive = AppUtil.isAnySessionActive();
-            Log.a("session active "+anySessionActive);
             if (anySessionActive) {
                 new SessionEvents().rejoinToPreviousActiveSession();
             }
@@ -97,12 +96,11 @@ public class SocketController {
     private Emitter.Listener onDisconnect = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.a("socket disconnect");
             boolean anySessionActive = AppUtil.isAnySessionActive();
             if (anySessionActive) {
                 Intent intent = new Intent(context, UserService.class);
                 intent.putExtra(AppConstants.SERVICE_TYPE, UserService.DROP_SESSION_API);
-                intent.putExtra(AppConstants.SESSION_ID, SharedPreferenceHelper.getString(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID));
+                intent.putExtra(AppConstants.SESSION_ID, AppUtil.getSessionId());
                 intent.putExtra(AppConstants.USER_ID, AppUtil.getLoggedInUserId());
                 context.startService(intent);
             }

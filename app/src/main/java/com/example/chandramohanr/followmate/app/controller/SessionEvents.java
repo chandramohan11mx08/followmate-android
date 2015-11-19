@@ -1,7 +1,7 @@
 package com.example.chandramohanr.followmate.app.controller;
 
+import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.example.chandramohanr.followmate.app.helpers.JsonParserHelper;
-import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
 import com.example.chandramohanr.followmate.app.models.events.ShareLocationInfo;
 import com.example.chandramohanr.followmate.app.models.events.response.JoinRoomResponse;
 import com.example.chandramohanr.followmate.app.models.events.response.NewUserJoinedEvent;
@@ -20,9 +20,6 @@ public class SessionEvents {
         @Override
         public void call(Object... args) {
             SessionStartedEvent sessionStartedEvent = JsonParserHelper.getSessionStartedEvent(args[0]);
-            if (sessionStartedEvent.is_session_created) {
-                SharedPreferenceHelper.set(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID, sessionStartedEvent.session_id);
-            }
             eventBus.post(sessionStartedEvent);
         }
     };
@@ -61,7 +58,7 @@ public class SessionEvents {
 
     public void rejoinToPreviousActiveSession() {
         ReconnectToPreviousLostSession reconnectToPreviousLostSession = new ReconnectToPreviousLostSession();
-        reconnectToPreviousLostSession.sessionId = SharedPreferenceHelper.getString(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID);
+        reconnectToPreviousLostSession.sessionId = AppUtil.getSessionId();
         eventBus.post(reconnectToPreviousLostSession);
     }
 }
