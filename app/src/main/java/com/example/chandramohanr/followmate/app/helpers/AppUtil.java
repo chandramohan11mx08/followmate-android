@@ -14,9 +14,10 @@ public class AppUtil {
          return SharedPreferenceHelper.getString(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID);
     }
 
-    public static void setSessionInfo(String sessionId, boolean isOwner) {
+    public static void setNewSessionInfo(String sessionId, boolean isOwner) {
         SharedPreferenceHelper.set(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID, sessionId);
         SharedPreferenceHelper.set(SharedPreferenceHelper.KEY_ACTIVE_SESSION_OWNER, isOwner);
+        SharedPreferenceHelper.deleteSharedPreference(SharedPreferenceHelper.KEY_SESSION_TO_JOIN);
     }
 
     public static void resetSessionInfo() {

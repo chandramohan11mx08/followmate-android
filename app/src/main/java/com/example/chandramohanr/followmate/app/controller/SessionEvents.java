@@ -2,6 +2,7 @@ package com.example.chandramohanr.followmate.app.controller;
 
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.example.chandramohanr.followmate.app.helpers.JsonParserHelper;
+import com.example.chandramohanr.followmate.app.models.events.SessionConnectionSocketFailure;
 import com.example.chandramohanr.followmate.app.models.events.ShareLocationInfo;
 import com.example.chandramohanr.followmate.app.models.events.response.JoinRoomResponse;
 import com.example.chandramohanr.followmate.app.models.events.response.NewUserJoinedEvent;
@@ -60,5 +61,10 @@ public class SessionEvents {
         ReconnectToPreviousLostSession reconnectToPreviousLostSession = new ReconnectToPreviousLostSession();
         reconnectToPreviousLostSession.sessionId = AppUtil.getSessionId();
         eventBus.post(reconnectToPreviousLostSession);
+    }
+
+    public void notifyJoinSessionFailure(String sessionToBeConnected){
+        SessionConnectionSocketFailure sessionConnectionSocketFailure = new SessionConnectionSocketFailure(sessionToBeConnected);
+        eventBus.post(sessionConnectionSocketFailure);
     }
 }

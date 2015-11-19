@@ -23,6 +23,7 @@ import com.example.chandramohanr.followmate.app.SocketController;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.example.chandramohanr.followmate.app.models.ParticipantInfo;
 import com.example.chandramohanr.followmate.app.models.UserLocation;
+import com.example.chandramohanr.followmate.app.models.events.SessionConnectionSocketFailure;
 import com.example.chandramohanr.followmate.app.models.events.ShareLocationInfo;
 import com.example.chandramohanr.followmate.app.models.events.StartSessionRequest;
 import com.example.chandramohanr.followmate.app.models.events.request.JoinSessionRequest;
@@ -405,7 +406,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
             if (isRejoin) {
                 socketController.rejoinSession(jsonObject);
             } else {
-                socketController.joinSession(jsonObject);
+                socketController.joinSession(sessionId,jsonObject);
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -426,7 +427,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     public void onEventMainThread(SessionStartedEvent sessionStartedEvent) {
         Log.a("on SessionStartedEvent " + sessionStartedEvent.is_session_created);
         if (sessionStartedEvent.is_session_created) {
-            AppUtil.setSessionInfo(sessionStartedEvent.session_id, true);
+            AppUtil.setNewSessionInfo(sessionStartedEvent.session_id, true);
             vSessionInfo.setText("Started session " + sessionStartedEvent.session_id);
             vSessionInfo.setVisibility(View.VISIBLE);
             isSessionOwner = true;
@@ -442,7 +443,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         boolean joined = joinRoomResponse.joined;
         Toast.makeText(this, "Joined new session " + joined, Toast.LENGTH_SHORT).show();
         if(joined){
-            AppUtil.setSessionInfo(joinRoomResponse.session_id, false);
+            AppUtil.setNewSessionInfo(joinRoomResponse.session_id, false);
             vSessionInfo.setText("Joined session " + joinRoomResponse.session_id);
             shareMyLocationSwitch.setVisibility(View.VISIBLE);
             myMarker.setVisible(false);
@@ -476,6 +477,9 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         updateMarkerLocation(shareLocationInfo.user_id, shareLocationInfo.userLocation, false);
     }
 
+    public void onEventMainThread(SessionConnectionSocketFailure sessionConnectionSocketFailure){
+        requestToJoinSession(sessionConnectionSocketFailure.sessionId, false);
+    }
 
     class UserMarkerInfo {
         public String userId;

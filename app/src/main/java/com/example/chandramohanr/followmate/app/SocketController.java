@@ -63,9 +63,11 @@ public class SocketController {
         }
     }
 
-    public void joinSession(JSONObject jsonObject){
+    public void joinSession(String sessionId, JSONObject jsonObject){
         if(mSocket != null && mSocket.connected()){
             emitEvent(mSocket, "join_session", jsonObject);
+        }else{
+            SharedPreferenceHelper.set(SharedPreferenceHelper.KEY_SESSION_TO_JOIN, sessionId);
         }
     }
 
@@ -80,8 +82,12 @@ public class SocketController {
         public void call(Object... args) {
 
             boolean anySessionActive = AppUtil.isAnySessionActive();
+            String sessionToBeConnected = SharedPreferenceHelper.getString(SharedPreferenceHelper.KEY_SESSION_TO_JOIN);
             if (anySessionActive) {
                 new SessionEvents().rejoinToPreviousActiveSession();
+            }
+            else if(sessionToBeConnected != null && !sessionToBeConnected.isEmpty()){
+                new SessionEvents().notifyJoinSessionFailure(sessionToBeConnected);
             }
         }
     };
