@@ -21,8 +21,10 @@ import com.example.chandramohanr.followmate.R;
 import com.example.chandramohanr.followmate.app.Constants.AppConstants;
 import com.example.chandramohanr.followmate.app.SocketController;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
+import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
 import com.example.chandramohanr.followmate.app.models.ParticipantInfo;
 import com.example.chandramohanr.followmate.app.models.UserLocation;
+import com.example.chandramohanr.followmate.app.models.events.ChangeMarkerVisibility;
 import com.example.chandramohanr.followmate.app.models.events.SessionConnectionSocketFailure;
 import com.example.chandramohanr.followmate.app.models.events.ShareLocationInfo;
 import com.example.chandramohanr.followmate.app.models.events.StartSessionRequest;
@@ -125,7 +127,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         mLocationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(3 * 1000)
-                .setFastestInterval(3 * 1000);
+                .setFastestInterval(5 * 1000);
 
         if (isGPSEnabled(activity)) {
             Log.a("GPS is on");
@@ -153,11 +155,11 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
                 return;
             }
         }
+        socketController.initSession();
         Location location = locationManager.getLastKnownLocation(provider);
         if (location != null) {
             setLocation(location);
         }
-        socketController.initSession();
 
         Intent intent = getIntent();
         String action = intent.getAction();
@@ -172,13 +174,17 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     @CheckedChange(R.id.share_my_location)
-    public void toggleShareMyLocationSwitch(){
+    public void toggleShareMyLocationSwitch() {
         shareMyLocation = shareMyLocationSwitch.isChecked();
-        if(shareMyLocation){
-            setLocation(lastKnownlocation);
-        }else{
-            myMarker.setVisible(false);
+        ChangeMarkerVisibility changeMarkerVisibility = new ChangeMarkerVisibility(AppUtil.getSessionId(), loggedInUserId, shareMyLocation);
+        String json = new Gson().toJson(changeMarkerVisibility);
+        try {
+            socketController.changeVisibility(new JSONObject(json));
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+        Log.a("changing my marker visibility "+shareMyLocation);
+        updateMapZoom();
     }
 
     public void setLocation(Location location) {
@@ -192,11 +198,13 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         if ((anySessionActive && shareMyLocation)) {
             shareMyLocation(userLocation);
         }
-        Marker myMarker1 = getMarker(loggedInUserId, userLocation, true);
-        if (myMarker != null && shareMyLocation) {
-            myMarker.setVisible(false);
+        if(myMarker == null){
+            myMarker = getMarker(loggedInUserId, userLocation, true);
+            Log.a("my marker was null " + new Gson().toJson(userLocation));
+        }else{
+            myMarker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
+            myMarker.setRotation(bearingTo);
         }
-        myMarker = myMarker1;
         updateMapZoom();
     }
 
@@ -210,21 +218,34 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         }
     }
 
-    public void updateMarkerLocation(String userId, UserLocation userLocation, boolean isOwner){
-        Marker marker = getMarker(userId, userLocation, isOwner);
-        setMarker(userId, marker);
-    }
-
-    public void setMarker(String userId, Marker marker) {
+    public void setMarkerVisibility(String userId, boolean markerVisible) {
         for (int i = 0; i < markers.size(); i++) {
             UserMarkerInfo userMarkerInfo = markers.get(i);
             if (userMarkerInfo.userId.equalsIgnoreCase(userId)) {
-                userMarkerInfo.marker.remove();
-                markers.remove(i);
+                userMarkerInfo.isMarkerVisible = markerVisible;
+                userMarkerInfo.marker.setVisible(markerVisible);
                 break;
             }
         }
-        markers.add(new UserMarkerInfo(userId, marker));
+        updateMapZoom();
+    }
+
+    public void setMarker(String userId,UserLocation userLocation) {
+        boolean markerSet = false;
+        for (int i = 0; i < markers.size(); i++) {
+            UserMarkerInfo userMarkerInfo = markers.get(i);
+            if (userMarkerInfo.userId.equalsIgnoreCase(userId)) {
+                userMarkerInfo.marker.setPosition(new LatLng(userLocation.lat, userLocation.lng));
+                userMarkerInfo.marker.setRotation(userLocation.bearingTo);
+                markerSet = true;
+                break;
+            }
+        }
+        if(!markerSet){
+            Marker marker = getMarker(userId, userLocation, false);
+            marker.setVisible(true);
+            markers.add(new UserMarkerInfo(userId, marker));
+        }
         updateMapZoom();
     }
 
@@ -235,33 +256,36 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_navigation_black_24dp));
         marker.setFlat(true);
         marker.setRotation(userLocation.bearingTo);
-        marker.setVisible(false);
         return marker;
     }
 
     public void updateMapZoom() {
         CameraUpdate cu = null;
         if (markers.size() == 0) {
+            Log.a("my marker visibility always true");
             myMarker.setVisible(true);
-            cu = CameraUpdateFactory.newLatLngZoom(myMarker.getPosition(), 15f);
+            cu = CameraUpdateFactory.newLatLngZoom(myMarker.getPosition(), 18f);
             map.animateCamera(cu);
-        }
-        else if (markers.size() == 1) {
-            Marker marker = markers.get(0).marker;
-            marker.setVisible(true);
-            cu = CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15f);
-            map.animateCamera(cu);
+//        }
+//        else if (markers.size() == 1) {
+//            Marker marker = markers.get(0).marker;
+//            marker.setVisible(true);
+//            cu = CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15f);
+//            map.animateCamera(cu);
         } else {
 
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
             for (UserMarkerInfo userMarkerInfo : markers) {
-                Marker marker = userMarkerInfo.marker;
-                marker.setVisible(true);
-                builder.include(marker.getPosition());
+                if (userMarkerInfo.isMarkerVisible) {
+                    Marker marker = userMarkerInfo.marker;
+                    builder.include(marker.getPosition());
+                }
             }
-            if (myMarker != null && shareMyLocation) {
+            Log.a("my marker position " + myMarker.getTitle());
+            if (shareMyLocation) {
                 builder.include(myMarker.getPosition());
             }
+            Log.a("my marker visibility " + shareMyLocation);
             myMarker.setVisible(shareMyLocation);
             LatLngBounds bounds = builder.build();
             cu = CameraUpdateFactory.newLatLngBounds(bounds, 30);
@@ -367,7 +391,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
             userMarkerInfo.marker.remove();
         }
         markers = new ArrayList<>();
-        shareMyLocationSwitch.setVisibility(View.GONE);
+//        shareMyLocationSwitch.setVisibility(View.GONE);
         AppUtil.resetSessionInfo();
     }
 
@@ -400,13 +424,14 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     private void requestToJoinSession(String sessionId, boolean isRejoin) {
         JoinSessionRequest joinSessionRequest = new JoinSessionRequest(sessionId, loggedInUserId, getLastKnownUserLocation());
+        SharedPreferenceHelper.set(SharedPreferenceHelper.KEY_SESSION_TO_JOIN, sessionId);
         String json = new Gson().toJson(joinSessionRequest);
         try {
             JSONObject jsonObject = new JSONObject(json);
             if (isRejoin) {
                 socketController.rejoinSession(jsonObject);
             } else {
-                socketController.joinSession(sessionId,jsonObject);
+                socketController.joinSession(jsonObject);
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -419,8 +444,10 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         }
         markers = new ArrayList<>();
         for (ParticipantInfo participantInfo : participantInfoList) {
-            updateMarkerLocation(participantInfo.user_id, participantInfo.latest_location, false);
-            Log.a("user info " + participantInfo.user_id + " location " + participantInfo.latest_location.lat + " " + participantInfo.latest_location.lng);
+            if (!participantInfo.user_id.equals(loggedInUserId)) {
+                setMarker(participantInfo.user_id, participantInfo.latest_location);
+                Log.a("user info " + participantInfo.user_id + " location " + participantInfo.latest_location.lat + " " + participantInfo.latest_location.lng);
+            }
         }
     }
 
@@ -445,6 +472,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         if(joined){
             AppUtil.setNewSessionInfo(joinRoomResponse.session_id, false);
             vSessionInfo.setText("Joined session " + joinRoomResponse.session_id);
+            vSessionInfo.setVisibility(View.VISIBLE);
             shareMyLocationSwitch.setVisibility(View.VISIBLE);
             myMarker.setVisible(false);
             shareMyLocation = false;
@@ -454,7 +482,9 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     public void onEventMainThread(NewUserJoinedEvent newUserJoinedEvent) {
         String user_id = newUserJoinedEvent.user_id;
-        updateMarkerLocation(user_id, newUserJoinedEvent.userLocation, false);
+        if (newUserJoinedEvent.visibility) {
+            setMarker(user_id, newUserJoinedEvent.userLocation);
+        }
         Toast.makeText(this, "New user joined " + user_id, Toast.LENGTH_SHORT).show();
     }
 
@@ -473,17 +503,23 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         Log.a("Drop notified to server" + dropUserFromSessionResponse.updated);
     }
 
-    public void onEventMainThread(ShareLocationInfo shareLocationInfo){
-        updateMarkerLocation(shareLocationInfo.user_id, shareLocationInfo.userLocation, false);
+    public void onEventMainThread(ShareLocationInfo shareLocationInfo) {
+        setMarker(shareLocationInfo.user_id, shareLocationInfo.userLocation);
     }
 
     public void onEventMainThread(SessionConnectionSocketFailure sessionConnectionSocketFailure){
         requestToJoinSession(sessionConnectionSocketFailure.sessionId, false);
     }
 
+    public void onEventMainThread(ChangeMarkerVisibility changeMarkerVisibility){
+        Log.a("visibility changed by user " + changeMarkerVisibility.user_id + " visible " + changeMarkerVisibility.visibility);
+        setMarkerVisibility(changeMarkerVisibility.user_id, changeMarkerVisibility.visibility);
+    }
+
     class UserMarkerInfo {
         public String userId;
         public Marker marker;
+        public boolean isMarkerVisible = true;
 
         public UserMarkerInfo(String userId, Marker marker) {
             this.userId = userId;

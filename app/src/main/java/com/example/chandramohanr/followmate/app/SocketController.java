@@ -42,6 +42,8 @@ public class SocketController {
             mSocket.on("new_user_joined", new SessionEvents().onNewUserJoined);
             mSocket.on("user_location", new SessionEvents().onUserLocationUpdate);
             mSocket.on("rejoined", new SessionEvents().onRejoined);
+            mSocket.on("visibility_changed", new SessionEvents().onUserVisibilityChanged);
+            mSocket.on("ping", new SessionEvents().onPingReceived);
             mSocket.connect();
 
         } catch (URISyntaxException e) {
@@ -63,17 +65,21 @@ public class SocketController {
         }
     }
 
-    public void joinSession(String sessionId, JSONObject jsonObject){
+    public void joinSession(JSONObject jsonObject){
         if(mSocket != null && mSocket.connected()){
             emitEvent(mSocket, "join_session", jsonObject);
-        }else{
-            SharedPreferenceHelper.set(SharedPreferenceHelper.KEY_SESSION_TO_JOIN, sessionId);
         }
     }
 
     public void rejoinSession(JSONObject jsonObject){
         if(mSocket != null && mSocket.connected()){
             emitEvent(mSocket, "rejoin_session",jsonObject);
+        }
+    }
+
+    public void changeVisibility(JSONObject jsonObject){
+        if(mSocket != null && mSocket.connected()){
+            emitEvent(mSocket, "change_visibility", jsonObject);
         }
     }
 

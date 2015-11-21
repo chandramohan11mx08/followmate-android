@@ -23,5 +23,6 @@ public class AppUtil {
     public static void resetSessionInfo() {
         SharedPreferenceHelper.deleteSharedPreference(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID);
         SharedPreferenceHelper.deleteSharedPreference(SharedPreferenceHelper.KEY_ACTIVE_SESSION_OWNER);
+        SharedPreferenceHelper.deleteSharedPreference(SharedPreferenceHelper.KEY_SESSION_TO_JOIN);
     }
 }

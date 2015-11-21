@@ -2,6 +2,7 @@ package com.example.chandramohanr.followmate.app.controller;
 
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.example.chandramohanr.followmate.app.helpers.JsonParserHelper;
+import com.example.chandramohanr.followmate.app.models.events.ChangeMarkerVisibility;
 import com.example.chandramohanr.followmate.app.models.events.SessionConnectionSocketFailure;
 import com.example.chandramohanr.followmate.app.models.events.ShareLocationInfo;
 import com.example.chandramohanr.followmate.app.models.events.response.JoinRoomResponse;
@@ -10,6 +11,7 @@ import com.example.chandramohanr.followmate.app.models.events.response.Reconnect
 import com.example.chandramohanr.followmate.app.models.events.response.ReconnectedToSession;
 import com.example.chandramohanr.followmate.app.models.events.response.SessionStartedEvent;
 import com.github.nkzawa.emitter.Emitter;
+import com.noveogroup.android.log.Log;
 
 import de.greenrobot.event.EventBus;
 
@@ -54,6 +56,21 @@ public class SessionEvents {
         public void call(Object... args) {
             ReconnectedToSession reconnectedToSession = JsonParserHelper.getRejoinedSessionResponseEvent(args[0]);
             eventBus.post(reconnectedToSession);
+        }
+    };
+
+    public Emitter.Listener onUserVisibilityChanged = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            ChangeMarkerVisibility changeMarkerVisibilityEvent = JsonParserHelper.getChangeMarkerVisibilityResponseEvent(args[0]);
+            eventBus.post(changeMarkerVisibilityEvent);
+        }
+    };
+
+    public Emitter.Listener onPingReceived = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.a("Ping received");
         }
     };
 

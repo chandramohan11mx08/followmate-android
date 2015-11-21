@@ -6,6 +6,7 @@ public class JoinSessionRequest {
     public String session_id;
     public String user_id;
     public UserLocation user_location;
+    public boolean visibility = false;
 
     public JoinSessionRequest(){}
 
@@ -13,5 +14,6 @@ public class JoinSessionRequest {
         this.session_id = session_id;
         this.user_id = user_id;
         this.user_location = userLocation;
+        visibility = false;
     }
 }
