@@ -70,7 +70,6 @@ public class SessionEvents {
     public Emitter.Listener onPingReceived = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.a("Ping received");
         }
     };
 

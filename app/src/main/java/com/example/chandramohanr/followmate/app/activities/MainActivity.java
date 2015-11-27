@@ -243,7 +243,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         }
         if(!markerSet){
             Marker marker = getMarker(userId, userLocation, false);
-            marker.setVisible(true);
             markers.add(new UserMarkerInfo(userId, marker));
         }
         updateMapZoom();
@@ -266,12 +265,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
             myMarker.setVisible(true);
             cu = CameraUpdateFactory.newLatLngZoom(myMarker.getPosition(), 18f);
             map.animateCamera(cu);
-//        }
-//        else if (markers.size() == 1) {
-//            Marker marker = markers.get(0).marker;
-//            marker.setVisible(true);
-//            cu = CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15f);
-//            map.animateCamera(cu);
         } else {
 
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
@@ -288,7 +281,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
             Log.a("my marker visibility " + shareMyLocation);
             myMarker.setVisible(shareMyLocation);
             LatLngBounds bounds = builder.build();
-            cu = CameraUpdateFactory.newLatLngBounds(bounds, 30);
+            cu = CameraUpdateFactory.newLatLngBounds(bounds, 300);
             map.moveCamera(cu);
         }
     }
@@ -391,7 +384,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
             userMarkerInfo.marker.remove();
         }
         markers = new ArrayList<>();
-//        shareMyLocationSwitch.setVisibility(View.GONE);
+        shareMyLocationSwitch.setVisibility(View.GONE);
         AppUtil.resetSessionInfo();
     }
 
@@ -439,10 +432,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     private void setParticipantInfo(List<ParticipantInfo> participantInfoList) {
-        if(map!=null){
-            map.clear();
-        }
-        markers = new ArrayList<>();
         for (ParticipantInfo participantInfo : participantInfoList) {
             if (!participantInfo.user_id.equals(loggedInUserId)) {
                 setMarker(participantInfo.user_id, participantInfo.latest_location);
