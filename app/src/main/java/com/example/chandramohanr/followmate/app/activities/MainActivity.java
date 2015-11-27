@@ -88,13 +88,13 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     private LocationRequest mLocationRequest;
     MapFragment mapFragment;
     GoogleMap map;
-    Location lastKnownlocation;
+    Location lastKnownLocation;
 
     List<UserMarkerInfo> markers = new ArrayList<>();
 
     EventBus eventBus = EventBus.getDefault();
 
-    private static int JOIN_ACTIVITY_REQUEST_CODE = 1;
+    private final static int JOIN_ACTIVITY_REQUEST_CODE = 1;
 
     SocketController socketController = new SocketController(this);
     boolean shareMyLocation = true;
@@ -129,11 +129,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
                 .setInterval(3 * 1000)
                 .setFastestInterval(5 * 1000);
 
-        if (isGPSEnabled(activity)) {
-            Log.a("GPS is on");
-        } else {
-            turnGPSOn();
-        }
+        requestGPSAccess();
     }
 
     @Override
@@ -183,15 +179,14 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.a("changing my marker visibility "+shareMyLocation);
         updateMapZoom();
     }
 
     public void setLocation(Location location) {
 
-        float bearingTo = lastKnownlocation != null ? lastKnownlocation.bearingTo(location) : 0;
+        float bearingTo = lastKnownLocation != null ? lastKnownLocation.bearingTo(location) : 0;
         UserLocation userLocation = new UserLocation(location.getLatitude(), location.getLongitude(), bearingTo);
-        lastKnownlocation = location;
+        lastKnownLocation = location;
 
         boolean anySessionActive = AppUtil.isAnySessionActive();
 
@@ -200,7 +195,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         }
         if(myMarker == null){
             myMarker = getMarker(loggedInUserId, userLocation, true);
-            Log.a("my marker was null " + new Gson().toJson(userLocation));
         }else{
             myMarker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
             myMarker.setRotation(bearingTo);
@@ -261,7 +255,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     public void updateMapZoom() {
         CameraUpdate cu = null;
         if (markers.size() == 0) {
-            Log.a("my marker visibility always true");
             myMarker.setVisible(true);
             cu = CameraUpdateFactory.newLatLngZoom(myMarker.getPosition(), 18f);
             map.animateCamera(cu);
@@ -274,11 +267,9 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
                     builder.include(marker.getPosition());
                 }
             }
-            Log.a("my marker position " + myMarker.getTitle());
             if (shareMyLocation) {
                 builder.include(myMarker.getPosition());
             }
-            Log.a("my marker visibility " + shareMyLocation);
             myMarker.setVisible(shareMyLocation);
             LatLngBounds bounds = builder.build();
             cu = CameraUpdateFactory.newLatLngBounds(bounds, 300);
@@ -286,21 +277,11 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         }
     }
 
-    public static boolean isGPSEnabled(Context mContext) {
-        LocationManager locationManager = (LocationManager)
-                mContext.getSystemService(LOCATION_SERVICE);
-        boolean providerEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        return providerEnabled;
-    }
-
-
-    private void turnGPSOn() {
+    private void requestGPSAccess() {
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
                 .addLocationRequest(mLocationRequest);
 
-        //**************************
-        builder.setAlwaysShow(true); //this is the key ingredient
-        //**************************
+        builder.setAlwaysShow(true);
 
         PendingResult<LocationSettingsResult> result =
                 LocationServices.SettingsApi.checkLocationSettings(googleApiClient, builder.build());
@@ -311,26 +292,15 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
                 final LocationSettingsStates state = result.getLocationSettingsStates();
                 switch (status.getStatusCode()) {
                     case LocationSettingsStatusCodes.SUCCESS:
-                        // All location settings are satisfied. The client can initialize location
-                        // requests here.
-
                         break;
                     case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                        // Location settings are not satisfied. But could be fixed by showing the user
-                        // a dialog.
-                        Log.a("GPS: RESOLUTION_REQUIRED");
                         try {
-                            // Show the dialog by calling startResolutionForResult(),
-                            // and check the result in onActivityResult().
                             status.startResolutionForResult(
                                     activity, 1000);
                         } catch (IntentSender.SendIntentException e) {
-                            // Ignore the error.
                         }
                         break;
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                        // Location settings are not satisfied. However, we have no way to fix the
-                        // settings so we won't show the dialog.
                         break;
                 }
             }
@@ -397,20 +367,26 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == JOIN_ACTIVITY_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                String sessionId = data.getStringExtra(AppConstants.SESSION_ID);
-                requestToJoinSession(sessionId, false);
-            }
+        switch (requestCode) {
+            case JOIN_ACTIVITY_REQUEST_CODE:
+                if (resultCode == Activity.RESULT_OK) {
+                    String sessionId = data.getStringExtra(AppConstants.SESSION_ID);
+                    requestToJoinSession(sessionId, false);
+                }
+                break;
+            case 1000:
+                if (resultCode != Activity.RESULT_OK) {
+                    finish();
+                }
         }
     }
 
     public UserLocation getLastKnownUserLocation(){
         Double latitude = null;
         Double longitude = null;
-        if (lastKnownlocation != null) {
-            latitude = lastKnownlocation.getLatitude();
-            longitude = lastKnownlocation.getLongitude();
+        if (lastKnownLocation != null) {
+            latitude = lastKnownLocation.getLatitude();
+            longitude = lastKnownLocation.getLongitude();
         }
         return new UserLocation(latitude, longitude, 0);
     }
