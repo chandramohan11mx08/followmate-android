@@ -1,8 +1,16 @@
 package com.example.chandramohanr.followmate.app.helpers;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.content.Context;
+
 public class AppUtil {
     public static String getLoggedInUserId() {
         return SharedPreferenceHelper.getString(SharedPreferenceHelper.KEY_USER_ID);
+    }
+
+    public static String getLoggedInUserMobileNumber() {
+        return SharedPreferenceHelper.getString(SharedPreferenceHelper.KEY_MOBILE_NUMBER);
     }
 
     public static boolean isAnySessionActive() {
@@ -24,5 +32,22 @@ public class AppUtil {
         SharedPreferenceHelper.deleteSharedPreference(SharedPreferenceHelper.KEY_ACTIVE_SESSION_ID);
         SharedPreferenceHelper.deleteSharedPreference(SharedPreferenceHelper.KEY_ACTIVE_SESSION_OWNER);
         SharedPreferenceHelper.deleteSharedPreference(SharedPreferenceHelper.KEY_SESSION_TO_JOIN);
+    }
+
+    public static void resetUserInfo(){
+        SharedPreferenceHelper.deleteSharedPreference(SharedPreferenceHelper.KEY_USER_ID);
+        SharedPreferenceHelper.deleteSharedPreference(SharedPreferenceHelper.KEY_MOBILE_NUMBER);
+    }
+
+    public static void setAccountManager(String userId, Context context) {
+        String accountName = userId;
+        String accountType = "com.followmate.app";
+        final Account account = new Account(accountName, accountType);
+        AccountManager mAccountManager =  AccountManager.get(context);
+        String authtoken = userId;
+        // Creating the account on the device and setting the auth token we got
+        // (Not setting the auth token will cause another call to the server to authenticate the user)
+        mAccountManager.addAccountExplicitly(account, "", null);
+        mAccountManager.setAuthToken(account, "1", authtoken);
     }
 }

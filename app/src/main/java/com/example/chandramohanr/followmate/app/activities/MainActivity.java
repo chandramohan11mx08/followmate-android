@@ -2,7 +2,6 @@ package com.example.chandramohanr.followmate.app.activities;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;

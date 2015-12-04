@@ -3,19 +3,17 @@ package com.example.chandramohanr.followmate.app.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chandramohanr.followmate.R;
 import com.example.chandramohanr.followmate.app.Constants.AppConstants;
+import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
 import com.example.chandramohanr.followmate.app.models.RegisterMobileNumberResponse;
 import com.example.chandramohanr.followmate.app.services.UserService;
 
-import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
@@ -62,9 +60,18 @@ public class SignInActivity extends BaseActivity {
 
     public void onEventMainThread(RegisterMobileNumberResponse registerMobileNumberResponse) {
         if (registerMobileNumberResponse.is_user_created) {
-            SharedPreferenceHelper.set(SharedPreferenceHelper.KEY_USER_ID, registerMobileNumberResponse.userId);
-            Intent intent = new Intent(this, MainActivity_.class);
-            startActivity(intent);
+            String userId = registerMobileNumberResponse.userId;
+            String mobileNumber = registerMobileNumberResponse.mobileNumber;
+
+            SharedPreferenceHelper.set(SharedPreferenceHelper.KEY_USER_ID, userId);
+            SharedPreferenceHelper.set(SharedPreferenceHelper.KEY_MOBILE_NUMBER, mobileNumber);
+
+            AppUtil.setAccountManager(mobileNumber, getApplicationContext());
+
+            Intent mainActivityIntent = new Intent(this, MainActivity_.class);
+            setResult(RESULT_OK);
+            finish();
+            startActivity(mainActivityIntent);
         } else {
             setErrorMessage(registerMobileNumberResponse.message);
         }

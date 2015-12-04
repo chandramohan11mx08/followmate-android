@@ -2,8 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.chandramohanr.followmate">
 
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
 
     <uses-feature
         android:glEsVersion="0x00020000"
@@ -51,6 +59,34 @@
             android:name=".app.activities.AuthenticateJoinActivity_"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppDialog" />
+
+        <service
+            android:name="com.example.chandramohanr.followmate.app.services.AuthenticationService">
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticator" />
+        </service>
+
+        <service
+            android:name="com.example.chandramohanr.followmate.app.services.ContactSyncService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/contact_sync_adapter" />
+        </service>
+        
+        <provider
+            android:name="com.example.chandramohanr.followmate.app.network.ContactProvider"
+            android:label="Followmate Contacts"
+            android:authorities="com.followmate.app.contacts"
+            android:syncable="true"
+            android:exported="false" />
 
         <meta-data
             android:name="com.google.android.gms.version"

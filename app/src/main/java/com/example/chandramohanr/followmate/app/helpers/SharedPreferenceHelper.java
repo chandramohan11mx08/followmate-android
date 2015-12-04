@@ -10,6 +10,7 @@ public class SharedPreferenceHelper {
     public static final String FOLLOWMATE_SHARED_PREF = "com.follomate.app";
 
     public static final String KEY_USER_ID = "uid";
+    public static final String KEY_MOBILE_NUMBER = "mobile_num";
     public static final String KEY_ACTIVE_SESSION_ID = "activeSessionId";
     public static final String KEY_ACTIVE_SESSION_OWNER = "isActiveSessionOwner";
     public static final String KEY_SESSION_TO_JOIN = "connectToSession";

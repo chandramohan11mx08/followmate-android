@@ -10,4 +10,6 @@ public class RegisterMobileNumberResponse {
     public String message;
     @SerializedName("user_id")
     public String userId;
+    @SerializedName("mobile_number")
+    public String mobileNumber;
 }
