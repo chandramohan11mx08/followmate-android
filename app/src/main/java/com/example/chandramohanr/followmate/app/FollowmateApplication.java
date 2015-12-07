@@ -19,6 +19,8 @@ public class FollowmateApplication extends Application{
             Stetho.initializeWithDefaults(this);
         }
         AppUtil.resetSessionInfo();
+//        Intent intent = new Intent(mContext, ContactService.class);
+//        startService(intent);
     }
 
     public static Context getContext(){

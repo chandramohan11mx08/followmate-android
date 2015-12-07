@@ -150,7 +150,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
                 return;
             }
         }
-        socketController.initSession();
+//        socketController.initSession();
         Location location = locationManager.getLastKnownLocation(provider);
         if (location != null) {
             setLocation(location);
