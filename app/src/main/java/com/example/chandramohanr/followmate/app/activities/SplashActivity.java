@@ -7,7 +7,6 @@ import android.provider.ContactsContract;
 
 import com.example.chandramohanr.followmate.R;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
-import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
 import com.noveogroup.android.log.Log;
 
 import org.androidannotations.annotations.AfterViews;
@@ -20,7 +19,7 @@ public class SplashActivity extends BaseActivity {
 
     @AfterViews
     public void afterViewInjection() {
-        fetchContacts();
+//        fetchContacts();
         String userId = AppUtil.getLoggedInUserId();
         Intent intent = null;
         if (userId.isEmpty()) {
@@ -28,10 +27,10 @@ public class SplashActivity extends BaseActivity {
         } else {
             intent = new Intent(this, MainActivity_.class);
         }
-//        startActivity(intent);
+        startActivity(intent);
     }
 
-    @Click(R.id.contacts)
+//    @Click(R.id.contacts)
     @Background
     public void fetchContacts() {
         ContentResolver cr = getContentResolver();
