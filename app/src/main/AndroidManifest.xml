@@ -65,6 +65,10 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppDialog" />
 
+        <activity
+            android:name=".app.activities.ContactListActivity_"
+            android:screenOrientation="portrait" />
+
         <service
             android:name="com.example.chandramohanr.followmate.app.services.AuthenticationService">
             <intent-filter>

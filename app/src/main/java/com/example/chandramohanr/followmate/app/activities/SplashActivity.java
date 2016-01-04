@@ -31,6 +31,11 @@ public class SplashActivity extends BaseActivity {
     }
 
 //    @Click(R.id.contacts)
+    public void launchContactList(){
+        Intent intent = new Intent(this, ContactListActivity_.class);
+        startActivity(intent);
+    }
+
     @Background
     public void fetchContacts() {
         ContentResolver cr = getContentResolver();
