@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.provider.ContactsContract;
+import android.telephony.SmsManager;
 
 import com.example.chandramohanr.followmate.R;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
@@ -20,18 +21,18 @@ public class SplashActivity extends BaseActivity {
     @AfterViews
     public void afterViewInjection() {
 //        fetchContacts();
-        String userId = AppUtil.getLoggedInUserId();
+        boolean isVerified = AppUtil.isUserMobileNumberVerified();
         Intent intent = null;
-        if (userId.isEmpty()) {
-            intent = new Intent(this, SignInActivity_.class);
-        } else {
+        if (isVerified) {
             intent = new Intent(this, MainActivity_.class);
+        } else {
+            intent = new Intent(this, SignInActivity_.class);
         }
         startActivity(intent);
     }
 
-//    @Click(R.id.contacts)
-    public void launchContactList(){
+    //    @Click(R.id.contacts)
+    public void launchContactList() {
         Intent intent = new Intent(this, ContactListActivity_.class);
         startActivity(intent);
     }

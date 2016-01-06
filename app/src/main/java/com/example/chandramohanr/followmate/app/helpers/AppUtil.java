@@ -9,6 +9,10 @@ public class AppUtil {
         return SharedPreferenceHelper.getString(SharedPreferenceHelper.KEY_USER_ID);
     }
 
+    public static boolean isUserMobileNumberVerified() {
+        return SharedPreferenceHelper.getBoolean(SharedPreferenceHelper.KEY_MOBILE_VERIFIED);
+    }
+
     public static String getLoggedInUserMobileNumber() {
         return SharedPreferenceHelper.getString(SharedPreferenceHelper.KEY_MOBILE_NUMBER);
     }

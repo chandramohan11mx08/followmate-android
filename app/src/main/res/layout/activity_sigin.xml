@@ -5,29 +5,43 @@
     android:layout_gravity="center"
     android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/mobile_number"
+    <android.support.design.widget.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:hint="@string/enter_mobile_number"
-        android:inputType="phone"
-        android:maxLength="10"
-        android:padding="16dp"
-        android:singleLine="true" />
+        android:layout_marginRight="16dp">
 
-    <TextView
-        android:id="@+id/error_view"
+        <EditText
+            android:id="@+id/mobile_number"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/enter_mobile_number"
+            android:inputType="phone"
+            android:maxLength="10"
+            android:padding="16dp"
+            android:singleLine="true" />
+    </android.support.design.widget.TextInputLayout>
+
+
+    <android.support.design.widget.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/mobile_number"
-        android:gravity="center"
-        android:padding="8dp"
-        android:text="@string/enter_valid_mobile_number"
-        android:textColor="@color/errorMsg"
-        android:visibility="gone" />
+        android:layout_centerInParent="true"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp">
+
+        <EditText
+            android:id="@+id/verification_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:hint="@string/enter_verification_code"
+            android:maxLength="10"
+            android:padding="16dp"
+            android:singleLine="true"
+            android:visibility="gone" />
+    </android.support.design.widget.TextInputLayout>
 
     <Button
         android:id="@+id/proceed_button"
@@ -35,6 +49,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="@color/transparent_white"
-        android:text="@string/proceed" />
+        android:text="@string/proceed"
+        android:textColor="@color/colorPrimaryText" />
 </RelativeLayout>

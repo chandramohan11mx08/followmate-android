@@ -102,13 +102,13 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     String loggedInUserId = AppUtil.getLoggedInUserId();
 
     @Override
-    public void onCreate(Bundle bundle){
+    public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         eventBus.register(this);
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         super.onDestroy();
         socketController.disconnect();
         eventBus.unregister(this);
@@ -127,7 +127,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(3 * 1000)
                 .setFastestInterval(5 * 1000);
-
         requestGPSAccess();
     }
 
@@ -192,9 +191,9 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         if ((anySessionActive && shareMyLocation)) {
             shareMyLocation(userLocation);
         }
-        if(myMarker == null){
+        if (myMarker == null) {
             myMarker = getMarker(loggedInUserId, userLocation, true);
-        }else{
+        } else {
             myMarker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
             myMarker.setRotation(bearingTo);
         }
@@ -202,7 +201,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     private void shareMyLocation(UserLocation userLocation) {
-        ShareLocationInfo shareLocationInfo = new ShareLocationInfo(loggedInUserId, AppUtil.getSessionId(),userLocation);
+        ShareLocationInfo shareLocationInfo = new ShareLocationInfo(loggedInUserId, AppUtil.getSessionId(), userLocation);
         String json = new Gson().toJson(shareLocationInfo);
         try {
             socketController.shareLocation(new JSONObject(json));
@@ -223,7 +222,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         updateMapZoom();
     }
 
-    public void setMarker(String userId,UserLocation userLocation) {
+    public void setMarker(String userId, UserLocation userLocation) {
         boolean markerSet = false;
         for (int i = 0; i < markers.size(); i++) {
             UserMarkerInfo userMarkerInfo = markers.get(i);
@@ -234,7 +233,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
                 break;
             }
         }
-        if(!markerSet){
+        if (!markerSet) {
             Marker marker = getMarker(userId, userLocation, false);
             markers.add(new UserMarkerInfo(userId, marker));
         }
@@ -349,7 +348,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     private void resetPreviousSession() {
-        for(UserMarkerInfo userMarkerInfo: markers){
+        for (UserMarkerInfo userMarkerInfo : markers) {
             userMarkerInfo.marker.remove();
         }
         markers = new ArrayList<>();
@@ -358,8 +357,8 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     @Click(R.id.join_session)
-    public void joinSession(){
-        Intent intent = new Intent(this,AuthenticateJoinActivity_.class);
+    public void joinSession() {
+        Intent intent = new Intent(this, AuthenticateJoinActivity_.class);
         startActivityForResult(intent, JOIN_ACTIVITY_REQUEST_CODE);
     }
 
@@ -380,7 +379,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         }
     }
 
-    public UserLocation getLastKnownUserLocation(){
+    public UserLocation getLastKnownUserLocation() {
         Double latitude = null;
         Double longitude = null;
         if (lastKnownLocation != null) {
@@ -433,7 +432,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         resetPreviousSession();
         boolean joined = joinRoomResponse.joined;
         Toast.makeText(this, "Joined new session " + joined, Toast.LENGTH_SHORT).show();
-        if(joined){
+        if (joined) {
             AppUtil.setNewSessionInfo(joinRoomResponse.session_id, false);
             vSessionInfo.setText("Joined session " + joinRoomResponse.session_id);
             vSessionInfo.setVisibility(View.VISIBLE);
@@ -458,7 +457,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     public void onEventMainThread(ReconnectedToSession reconnectedToSession) {
         Log.a("Reconnected to previous session " + reconnectedToSession.joined);
-        if(reconnectedToSession.joined){
+        if (reconnectedToSession.joined) {
             setParticipantInfo(reconnectedToSession.participantInfoList);
         }
     }
@@ -471,11 +470,11 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         setMarker(shareLocationInfo.user_id, shareLocationInfo.userLocation);
     }
 
-    public void onEventMainThread(SessionConnectionSocketFailure sessionConnectionSocketFailure){
+    public void onEventMainThread(SessionConnectionSocketFailure sessionConnectionSocketFailure) {
         requestToJoinSession(sessionConnectionSocketFailure.sessionId, false);
     }
 
-    public void onEventMainThread(ChangeMarkerVisibility changeMarkerVisibility){
+    public void onEventMainThread(ChangeMarkerVisibility changeMarkerVisibility) {
         Log.a("visibility changed by user " + changeMarkerVisibility.user_id + " visible " + changeMarkerVisibility.visibility);
         setMarkerVisibility(changeMarkerVisibility.user_id, changeMarkerVisibility.visibility);
     }

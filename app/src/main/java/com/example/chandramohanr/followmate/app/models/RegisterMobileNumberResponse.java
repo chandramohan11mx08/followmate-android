@@ -12,4 +12,7 @@ public class RegisterMobileNumberResponse {
     public String userId;
     @SerializedName("mobile_number")
     public String mobileNumber;
+    @SerializedName("isVerificationRequired")
+    public boolean isVerificationRequired;
+    public String code;
 }
