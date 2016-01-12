@@ -64,7 +64,7 @@ public class SignInActivity extends BaseActivity {
             if (!mobileNumber.isEmpty()) {
                 String deviceId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
                 Intent intent = new Intent(this, UserService.class);
-                intent.putExtra(AppConstants.SERVICE_TYPE, 1);
+                intent.putExtra(AppConstants.SERVICE_TYPE, UserService.REGISTER_USER_API);
                 intent.putExtra(AppConstants.MOBILE_NUMBER, mobileNumber);
                 intent.putExtra(AppConstants.DEVICE_ID, deviceId);
                 startService(intent);

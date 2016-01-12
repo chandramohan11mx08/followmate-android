@@ -9,8 +9,12 @@ import com.example.chandramohanr.followmate.app.Constants.UrlConstants;
 import com.example.chandramohanr.followmate.app.helpers.RestServiceGenerator;
 import com.example.chandramohanr.followmate.app.interfaces.UserApiContract;
 import com.example.chandramohanr.followmate.app.models.RegisterMobileNumberResponse;
+import com.example.chandramohanr.followmate.app.models.SyncContactRequestBody;
 import com.example.chandramohanr.followmate.app.models.events.response.DropUserFromSessionResponse;
+import com.example.chandramohanr.followmate.app.models.events.response.SyncContactResponse;
 import com.noveogroup.android.log.Log;
+
+import org.parceler.Parcels;
 
 import de.greenrobot.event.EventBus;
 import retrofit.Call;
@@ -22,6 +26,7 @@ public class UserService extends IntentService {
 
     public final static int REGISTER_USER_API = 1;
     public final static int DROP_SESSION_API = 2;
+    public final static int SYNC_CONTACTS = 3;
     public UserApiContract userApiContract = null;
 
     public UserService() {
@@ -31,7 +36,6 @@ public class UserService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Log.a("User service started");
         int apiType = intent.getIntExtra(AppConstants.SERVICE_TYPE, 0);
         switch (apiType) {
             case REGISTER_USER_API:
@@ -44,6 +48,10 @@ public class UserService extends IntentService {
                 String userId = intent.getStringExtra(AppConstants.USER_ID);
                 dropFromSession(sessionId, userId);
                 break;
+            case SYNC_CONTACTS:
+                SyncContactRequestBody syncContactRequestBody = Parcels.unwrap(intent.getParcelableExtra(AppConstants.DATA));
+                syncUserContacts(syncContactRequestBody);
+                break;
             default:
                 Log.a("No matching api type");
         }
@@ -54,19 +62,17 @@ public class UserService extends IntentService {
         call.enqueue(new Callback<RegisterMobileNumberResponse>() {
             @Override
             public void onResponse(Response<RegisterMobileNumberResponse> response, Retrofit retrofit) {
-                Log.a("Response got ");
                 RegisterMobileNumberResponse registerMobileNumberResponse = response.body();
-                if(registerMobileNumberResponse!=null){
+                if (registerMobileNumberResponse != null) {
                     registerMobileNumberResponse.status = true;
                     EventBus.getDefault().post(registerMobileNumberResponse);
-                }else{
-                 broadcastError();
+                } else {
+                    broadcastError();
                 }
             }
 
             @Override
             public void onFailure(Throwable t) {
-                Log.a("Response failed ");
                 broadcastError();
             }
 
@@ -78,24 +84,22 @@ public class UserService extends IntentService {
         });
     }
 
-    public void dropFromSession(String sessionId, String userId){
+    public void dropFromSession(String sessionId, String userId) {
         Call<DropUserFromSessionResponse> call = userApiContract.dropFromSession(sessionId, userId);
         call.enqueue(new Callback<DropUserFromSessionResponse>() {
             @Override
             public void onResponse(Response<DropUserFromSessionResponse> response, Retrofit retrofit) {
-                Log.a("Response got ");
                 DropUserFromSessionResponse dropUserFromSessionResponse = response.body();
-                if(dropUserFromSessionResponse!=null){
+                if (dropUserFromSessionResponse != null) {
                     dropUserFromSessionResponse.apiStatus = true;
                     EventBus.getDefault().post(dropUserFromSessionResponse);
-                }else{
+                } else {
                     broadcastError();
                 }
             }
 
             @Override
             public void onFailure(Throwable t) {
-                Log.a("Response failed ");
                 broadcastError();
             }
 
@@ -105,4 +109,31 @@ public class UserService extends IntentService {
             }
         });
     }
+
+    public void syncUserContacts(final SyncContactRequestBody syncContactRequestBody) {
+        Call<SyncContactResponse> call = userApiContract.syncContacts(syncContactRequestBody);
+        call.enqueue(new Callback<SyncContactResponse>() {
+            @Override
+            public void onResponse(Response<SyncContactResponse> response, Retrofit retrofit) {
+                SyncContactResponse syncContactResponse = response.body();
+                if (syncContactResponse != null) {
+                    syncContactResponse.status = true;
+                    EventBus.getDefault().post(syncContactResponse);
+                } else {
+                    broadcastError();
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                broadcastError();
+            }
+
+            private void broadcastError() {
+                SyncContactResponse syncContactResponse = new SyncContactResponse();
+                EventBus.getDefault().post(syncContactResponse);
+            }
+        });
+    }
+
 }

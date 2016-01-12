@@ -11,5 +11,6 @@ public final class AppConstants {
     public static final String DEVICE_ID = "device_id";
     public static final String SESSION_ID = "session_id";
     public static final String USER_ID = "user_id";
+    public static final String DATA = "data";
 
 }

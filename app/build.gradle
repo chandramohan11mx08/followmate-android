@@ -62,4 +62,7 @@ dependencies{
     compile('com.github.nkzawa:socket.io-client:0.6.0') {
         exclude group: 'org.json', module: 'json'
     }
+
+    compile 'org.parceler:parceler-api:1.0.4'
+    apt 'org.parceler:parceler:1.0.4'
 }
