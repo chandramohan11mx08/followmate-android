@@ -114,6 +114,30 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         eventBus.unregister(this);
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(googleApiClient.isConnected()){
+            googleApiClient.disconnect();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(!googleApiClient.isConnected()){
+            googleApiClient.connect();
+        }
+    }
+
+    private void removeLocationUpdate() {
+        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+    }
+
+    private void requestLocationUpdates() {
+        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, mLocationRequest, this);
+    }
+
     @AfterViews
     void afterViewInjection() {
         activity = this;
@@ -308,13 +332,15 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     @Override
     public void onConnected(Bundle bundle) {
+        Log.a("Google Api connection");
         mapFragment.getMapAsync(this);
-        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, mLocationRequest, this);
+        requestLocationUpdates();
     }
 
     @Override
     public void onConnectionSuspended(int i) {
         Log.a("Google Api connection suspended");
+        removeLocationUpdate();
     }
 
     @Override
@@ -326,6 +352,9 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     public void onLocationChanged(Location location) {
         if (location != null) {
             setLocation(location);
+        }
+        if (!AppUtil.isAnySessionActive()) {
+            removeLocationUpdate();
         }
     }
 
