@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -24,6 +25,7 @@ import com.example.chandramohanr.followmate.app.SocketController;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
 import com.example.chandramohanr.followmate.app.interfaces.LatLngInterpolator;
+import com.example.chandramohanr.followmate.app.models.ContactModel;
 import com.example.chandramohanr.followmate.app.models.ParticipantInfo;
 import com.example.chandramohanr.followmate.app.models.UserLocation;
 import com.example.chandramohanr.followmate.app.models.events.ChangeMarkerVisibility;
@@ -108,6 +110,15 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         eventBus.register(this);
+
+        Intent intent = getIntent();
+        if (intent.getAction() != null && intent.getAction().equalsIgnoreCase(Intent.ACTION_VIEW)) {
+            Uri data = intent.getData();
+            List<String> pathSegments = data.getPathSegments();
+            if(data != null && pathSegments.get(0).equalsIgnoreCase("join")){
+                processRequestToJoinDeepLinking(pathSegments);
+            }
+        }
     }
 
     @Override
@@ -488,6 +499,27 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         }
     }
 
+    private void processRequestToJoinDeepLinking(List<String> pathSegments) {
+        String sessionMessage = pathSegments.get(1);
+        String split[] = sessionMessage.split("_");
+        String mobileNumber = split[0];
+        String sessionId = split[1];
+        if (loggedInUserId != null) {
+            if (AppUtil.isAnySessionActive()) {
+                Toast.makeText(this, "Cannot join another session", Toast.LENGTH_LONG).show();
+            } else {
+                ContactModel contactModel = AppUtil.getContactInfo(this, mobileNumber);
+                String displayName = (contactModel.displayName != null) ? contactModel.displayName : mobileNumber;
+                Toast.makeText(this, displayName + " has invited you to follow", Toast.LENGTH_LONG).show();
+                requestToJoinSession(sessionId, false);
+            }
+        } else {
+            AppUtil.setNewSessionInfo(sessionId, false);
+            AppUtil.openSignUpActivity(this);
+            finish();
+        }
+    }
+
     public void onEventMainThread(SessionStartedEvent sessionStartedEvent) {
         Log.a("on SessionStartedEvent " + sessionStartedEvent.is_session_created);
         if (sessionStartedEvent.is_session_created) {
@@ -495,7 +527,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
             vSessionInfo.setText("Started session " + sessionStartedEvent.session_id);
             vSessionInfo.setVisibility(View.VISIBLE);
             String loggedInUserMobileNumber = AppUtil.getLoggedInUserMobileNumber();
-            String message = AppConstants.DOMAIN + (loggedInUserMobileNumber + "_" + sessionStartedEvent.session_id);
+            String message = AppConstants.DOMAIN_PREFIX_SHARE_LOCATION + (loggedInUserMobileNumber + "_" + sessionStartedEvent.session_id);
             AppUtil.openChooseDialogToSendTextMessage(this, message);
             isSessionOwner = true;
         } else {

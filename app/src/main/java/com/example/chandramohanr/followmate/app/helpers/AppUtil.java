@@ -4,6 +4,12 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.ContactsContract;
+
+import com.example.chandramohanr.followmate.app.activities.SignInActivity_;
+import com.example.chandramohanr.followmate.app.models.ContactModel;
 
 public class AppUtil {
     public static String getLoggedInUserId() {
@@ -62,5 +68,36 @@ public class AppUtil {
         sendIntent.putExtra(Intent.EXTRA_TEXT, message);
         sendIntent.setType("text/plain");
         context.startActivity(Intent.createChooser(sendIntent, "Share location"));
+    }
+
+    public static void openSignUpActivity(Context context){
+        Intent intent = new Intent(context, SignInActivity_.class);
+        context.startActivity(intent);
+    }
+
+    public static ContactModel getContactInfo(Context context, String number) {
+
+        ContactModel contactModel = new ContactModel(null, null, number);
+
+        String[] projection = new String[]{
+                ContactsContract.PhoneLookup.DISPLAY_NAME,
+                ContactsContract.PhoneLookup._ID};
+
+        // encode the phone number and build the filter URI
+        Uri contactUri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
+
+        // query time
+        Cursor cursor = context.getContentResolver().query(contactUri, projection, null, null, null);
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                contactModel.displayName = cursor.getString(cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME));
+                contactModel.id = cursor.getString(cursor.getColumnIndex(ContactsContract.PhoneLookup._ID));
+            } else {
+                return contactModel;
+            }
+            cursor.close();
+        }
+        return contactModel;
     }
 }

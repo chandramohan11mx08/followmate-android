@@ -57,7 +57,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="http" android:host="www.followmate.com" android:pathPattern="/join/.*"/>
+                <data android:scheme="http" android:host="www.followmate.in" android:pathPattern="/join/.*"/>
             </intent-filter>
         </activity>
 
