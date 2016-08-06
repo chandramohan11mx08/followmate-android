@@ -1,6 +1,7 @@
 package com.example.chandramohanr.followmate.app.activities;
 
 import android.Manifest;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -13,6 +14,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.SwitchCompat;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,6 +23,7 @@ import com.example.chandramohanr.followmate.app.Constants.AppConstants;
 import com.example.chandramohanr.followmate.app.SocketController;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
+import com.example.chandramohanr.followmate.app.interfaces.LatLngInterpolator;
 import com.example.chandramohanr.followmate.app.models.ParticipantInfo;
 import com.example.chandramohanr.followmate.app.models.UserLocation;
 import com.example.chandramohanr.followmate.app.models.events.ChangeMarkerVisibility;
@@ -117,7 +120,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     @Override
     public void onPause() {
         super.onPause();
-        if(googleApiClient.isConnected()){
+        if (googleApiClient.isConnected()) {
             googleApiClient.disconnect();
         }
     }
@@ -125,7 +128,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     @Override
     public void onResume() {
         super.onResume();
-        if(!googleApiClient.isConnected()){
+        if (!googleApiClient.isConnected()) {
             googleApiClient.connect();
         }
     }
@@ -173,7 +176,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
                 return;
             }
         }
-//        socketController.initSession();
         Location location = locationManager.getLastKnownLocation(provider);
         if (location != null) {
             setLocation(location);
@@ -249,10 +251,11 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     public void setMarker(String userId, UserLocation userLocation) {
         boolean markerSet = false;
         for (int i = 0; i < markers.size(); i++) {
-            UserMarkerInfo userMarkerInfo = markers.get(i);
+            final UserMarkerInfo userMarkerInfo = markers.get(i);
             if (userMarkerInfo.userId.equalsIgnoreCase(userId)) {
-                userMarkerInfo.marker.setPosition(new LatLng(userLocation.lat, userLocation.lng));
-                userMarkerInfo.marker.setRotation(userLocation.bearingTo);
+                animateMarker(userLocation, userMarkerInfo.marker);
+                //                userMarkerInfo.marker.setPosition(latlng);
+//                    userMarkerInfo.marker.setRotation(userLocation.bearingTo);
                 markerSet = true;
                 break;
             }
@@ -262,6 +265,46 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
             markers.add(new UserMarkerInfo(userId, marker));
         }
         updateMapZoom();
+    }
+
+    public static void animateMarker(final UserLocation userLocation, final Marker marker) {
+        if (marker != null) {
+            final LatLng startPosition = marker.getPosition();
+            final LatLng endPosition = new LatLng(userLocation.lat, userLocation.lng);
+            final float startRotation = marker.getRotation();
+            final LatLngInterpolator latLngInterpolator = new LatLngInterpolator.LinearFixed();
+            ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);
+            valueAnimator.setDuration(1000);
+            valueAnimator.setInterpolator(new LinearInterpolator());
+            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    try {
+                        float v = animation.getAnimatedFraction();
+                        LatLng newPosition = latLngInterpolator.interpolate(v, startPosition, endPosition);
+                        marker.setPosition(newPosition);
+                        marker.setRotation(computeRotation(v, startRotation, userLocation.bearingTo));
+                    } catch (Exception ex) {
+
+                    }
+                }
+            });
+            valueAnimator.start();
+        }
+    }
+
+    private static float computeRotation(float fraction, float start, float end) {
+        float normalizeEnd = end - start;
+        float normalizedEndAbs = (normalizeEnd + 360) % 360;
+        float direction = (normalizedEndAbs > 180) ? -1 : 1;
+        float rotation;
+        if (direction > 0) {
+            rotation = normalizedEndAbs;
+        } else {
+            rotation = normalizedEndAbs - 360;
+        }
+        float result = fraction * rotation + start;
+        return (result + 360) % 360;
     }
 
     @NonNull
@@ -360,6 +403,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     @Click(R.id.start_session)
     public void startNewSession() {
+        socketController.initSession();
         resetPreviousSession();
         StartSessionRequest startSessionRequest = new StartSessionRequest(loggedInUserId, getLastKnownUserLocation());
 
@@ -419,6 +463,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     }
 
     private void requestToJoinSession(String sessionId, boolean isRejoin) {
+        socketController.initSession();
         JoinSessionRequest joinSessionRequest = new JoinSessionRequest(sessionId, loggedInUserId, getLastKnownUserLocation());
         SharedPreferenceHelper.set(SharedPreferenceHelper.KEY_SESSION_TO_JOIN, sessionId);
         String json = new Gson().toJson(joinSessionRequest);

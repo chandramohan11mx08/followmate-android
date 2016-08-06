@@ -65,4 +65,6 @@ dependencies{
 
     compile 'org.parceler:parceler-api:1.0.4'
     apt 'org.parceler:parceler:1.0.4'
+
+    compile 'com.google.maps.android:android-maps-utils:0.4.3'
 }
