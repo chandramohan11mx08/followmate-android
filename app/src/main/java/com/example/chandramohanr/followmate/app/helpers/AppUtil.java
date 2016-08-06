@@ -3,6 +3,7 @@ package com.example.chandramohanr.followmate.app.helpers;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
+import android.content.Intent;
 
 public class AppUtil {
     public static String getLoggedInUserId() {
@@ -53,5 +54,13 @@ public class AppUtil {
         // (Not setting the auth token will cause another call to the server to authenticate the user)
         mAccountManager.addAccountExplicitly(account, "", null);
         mAccountManager.setAuthToken(account, "1", authtoken);
+    }
+
+    public static void openChooseDialogToSendTextMessage(Context context, String message) {
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, message);
+        sendIntent.setType("text/plain");
+        context.startActivity(Intent.createChooser(sendIntent, "Share location"));
     }
 }

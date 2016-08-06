@@ -494,6 +494,9 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
             AppUtil.setNewSessionInfo(sessionStartedEvent.session_id, true);
             vSessionInfo.setText("Started session " + sessionStartedEvent.session_id);
             vSessionInfo.setVisibility(View.VISIBLE);
+            String loggedInUserMobileNumber = AppUtil.getLoggedInUserMobileNumber();
+            String message = AppConstants.DOMAIN + (loggedInUserMobileNumber + "_" + sessionStartedEvent.session_id);
+            AppUtil.openChooseDialogToSendTextMessage(this, message);
             isSessionOwner = true;
         } else {
             vSessionInfo.setVisibility(View.GONE);

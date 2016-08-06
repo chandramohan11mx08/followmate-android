@@ -13,4 +13,5 @@ public final class AppConstants {
     public static final String USER_ID = "user_id";
     public static final String DATA = "data";
 
+    public static final String DOMAIN = "http://followmate.in/";
 }
