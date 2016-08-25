@@ -106,6 +106,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     Marker myMarker;
     String loggedInUserId = AppUtil.getLoggedInUserId();
 
+
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
