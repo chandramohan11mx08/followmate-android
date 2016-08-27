@@ -446,6 +446,11 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         startActivityForResult(intent, JOIN_ACTIVITY_REQUEST_CODE);
     }
 
+    @Click(R.id.mock_location)
+    public void mockLocation() {
+
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

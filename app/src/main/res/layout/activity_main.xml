@@ -47,5 +47,10 @@
             style="@style/action_button"
             android:layout_marginLeft="1dp"
             android:text="@string/join_session" />
+
+        <Button
+            android:id="@+id/mock_location"
+            style="@style/action_button"
+            android:text="mock " />
     </LinearLayout>
 </RelativeLayout>
