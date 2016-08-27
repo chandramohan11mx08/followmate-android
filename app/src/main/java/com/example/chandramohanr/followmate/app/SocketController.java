@@ -26,9 +26,9 @@ public class SocketController {
         this.context = context;
     }
 
-    public void initSession(){
+    public boolean initSession(){
         if (mSocket != null && mSocket.connected()) {
-            return;
+            return true;
         }
 
         try {
@@ -45,9 +45,10 @@ public class SocketController {
             mSocket.on("visibility_changed", new SessionEvents().onUserVisibilityChanged);
             mSocket.on("ping", new SessionEvents().onPingReceived);
             mSocket.connect();
-
+            return true;
         } catch (URISyntaxException e) {
             Log.a("Failed to get socket object");
+            return false;
         }
     }
 
@@ -131,7 +132,7 @@ public class SocketController {
             return false;
         }
 
-        if (socket != null && socket.connected()) {
+        if (socket != null) {
             socket.emit(eventType, eventObject);
             return true;
         } else {

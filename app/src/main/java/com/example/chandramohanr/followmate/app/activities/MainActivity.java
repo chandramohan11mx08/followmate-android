@@ -16,6 +16,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.SwitchCompat;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -83,6 +84,9 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     @ViewById(R.id.session_info)
     TextView vSessionInfo;
+
+    @ViewById(R.id.start_session)
+    Button vStartSession;
 
     @ViewById(R.id.share_my_location)
     SwitchCompat shareMyLocationSwitch;
@@ -414,20 +418,29 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     @Click(R.id.start_session)
     public void startNewSession() {
-        socketController.initSession();
-        resetPreviousSession();
-        StartSessionRequest startSessionRequest = new StartSessionRequest(loggedInUserId, getLastKnownUserLocation());
+        if (!AppUtil.isAnySessionActive()) {
+            boolean isSocketConnected = socketController.initSession();
+            if (isSocketConnected) {
+                resetPreviousSession();
+                StartSessionRequest startSessionRequest = new StartSessionRequest(loggedInUserId, getLastKnownUserLocation());
 
-        startSessionRequest.userId = loggedInUserId;
-        if (startSessionRequest.userId != null) {
-            String json = new Gson().toJson(startSessionRequest);
-            try {
-                socketController.connect(new JSONObject(json));
-            } catch (JSONException e) {
+                startSessionRequest.userId = loggedInUserId;
+                if (startSessionRequest.userId != null) {
+                    String json = new Gson().toJson(startSessionRequest);
+                    try {
+                        socketController.connect(new JSONObject(json));
+                    } catch (JSONException e) {
+                        Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(this, "No user name attached", Toast.LENGTH_SHORT).show();
+                }
+            } else {
                 Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(this, "No user name attached", Toast.LENGTH_SHORT).show();
+            resetPreviousSession();
+            socketController.disconnect();
         }
     }
 
@@ -531,6 +544,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
             AppUtil.setNewSessionInfo(sessionStartedEvent.session_id, true);
             vSessionInfo.setText("Started session " + sessionStartedEvent.session_id);
             vSessionInfo.setVisibility(View.VISIBLE);
+            vStartSession.setText(getString(R.string.end_session));
             String loggedInUserMobileNumber = AppUtil.getLoggedInUserMobileNumber();
             String message = AppConstants.DOMAIN_PREFIX_SHARE_LOCATION + (loggedInUserMobileNumber + "_" + sessionStartedEvent.session_id);
             AppUtil.openChooseDialogToSendTextMessage(this, message);

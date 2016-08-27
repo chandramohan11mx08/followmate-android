@@ -3,22 +3,17 @@ package com.example.chandramohanr.followmate.app.activities;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
-import android.os.Parcel;
 import android.provider.ContactsContract;
-import android.telephony.SmsManager;
 
 import com.example.chandramohanr.followmate.R;
 import com.example.chandramohanr.followmate.app.Constants.AppConstants;
-import com.example.chandramohanr.followmate.app.adapters.ContactListAdapter;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.example.chandramohanr.followmate.app.models.ContactModel;
 import com.example.chandramohanr.followmate.app.models.SyncContactRequestBody;
 import com.example.chandramohanr.followmate.app.services.UserService;
-import com.noveogroup.android.log.Log;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
-import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.parceler.Parcels;
 

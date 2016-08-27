@@ -2,6 +2,7 @@
     <string name="app_name">Followmate</string>
     <string name="register_mobile">Register Mobile Number</string>
     <string name="start_session">share</string>
+    <string name="end_session">end</string>
     <string name="proceed">proceed</string>
     <string name="join_session">join</string>
     <string name="enter_mobile_number">Enter mobile number</string>
