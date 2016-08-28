@@ -6,11 +6,15 @@ public final class UrlConstants {
     private static int production = 1;
 
     private static int CURRENT_ENV = production;
-    private static String url[] = {"http://192.168.1.105:6610", "http://128.199.224.226::6610/"};
 
-    private static String USER_REGISTER[] = {"http://192.168.50.108:6610/user/register", "http://128.199.224.226:6610/user/register"};
+    private static final String developmentUrl = "http://192.168.1.3:6610";
+    private static final String productionUrl = "http://128.199.224.226::6610";
 
-    private static String SERVER_SOCKET[] = {"http://192.168.1.105:6610", "http://128.199.224.226:6610"};
+    private static String url[] = {developmentUrl, productionUrl};
+
+    private static String USER_REGISTER[] = {developmentUrl+"/user/register", productionUrl+"/user/register"};
+
+    private static String SERVER_SOCKET[] = {developmentUrl, productionUrl};
 
     public static String getUserRegisterUrl(){
         return USER_REGISTER[CURRENT_ENV];

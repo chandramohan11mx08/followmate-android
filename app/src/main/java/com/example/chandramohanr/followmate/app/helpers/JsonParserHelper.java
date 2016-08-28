@@ -6,6 +6,7 @@ import com.example.chandramohanr.followmate.app.models.events.response.JoinRoomR
 import com.example.chandramohanr.followmate.app.models.events.response.NewUserJoinedEvent;
 import com.example.chandramohanr.followmate.app.models.events.response.ReconnectedToSession;
 import com.example.chandramohanr.followmate.app.models.events.response.SessionStartedEvent;
+import com.example.chandramohanr.followmate.app.models.events.response.SessionTerminated;
 import com.google.gson.Gson;
 
 public class JsonParserHelper {
@@ -32,5 +33,9 @@ public class JsonParserHelper {
 
     public static ChangeMarkerVisibility getChangeMarkerVisibilityResponseEvent(Object arg) {
         return new Gson().fromJson(arg.toString(), ChangeMarkerVisibility.class);
+    }
+
+    public static SessionTerminated getSessionTerminatedResponseEvent(Object arg) {
+        return new Gson().fromJson(arg.toString(), SessionTerminated.class);
     }
 }

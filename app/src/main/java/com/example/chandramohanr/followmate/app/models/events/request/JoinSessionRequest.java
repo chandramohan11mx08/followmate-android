@@ -8,8 +8,6 @@ public class JoinSessionRequest {
     public UserLocation user_location;
     public boolean visibility = false;
 
-    public JoinSessionRequest(){}
-
     public JoinSessionRequest(String session_id, String user_id, UserLocation userLocation) {
         this.session_id = session_id;
         this.user_id = user_id;

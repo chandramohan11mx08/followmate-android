@@ -34,12 +34,14 @@ import com.example.chandramohanr.followmate.app.models.events.SessionConnectionS
 import com.example.chandramohanr.followmate.app.models.events.ShareLocationInfo;
 import com.example.chandramohanr.followmate.app.models.events.StartSessionRequest;
 import com.example.chandramohanr.followmate.app.models.events.request.JoinSessionRequest;
+import com.example.chandramohanr.followmate.app.models.events.request.TerminateSession;
 import com.example.chandramohanr.followmate.app.models.events.response.DropUserFromSessionResponse;
 import com.example.chandramohanr.followmate.app.models.events.response.JoinRoomResponse;
 import com.example.chandramohanr.followmate.app.models.events.response.NewUserJoinedEvent;
 import com.example.chandramohanr.followmate.app.models.events.response.ReconnectToPreviousLostSession;
 import com.example.chandramohanr.followmate.app.models.events.response.ReconnectedToSession;
 import com.example.chandramohanr.followmate.app.models.events.response.SessionStartedEvent;
+import com.example.chandramohanr.followmate.app.models.events.response.SessionTerminated;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -419,28 +421,39 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     @Click(R.id.start_session)
     public void startNewSession() {
         if (!AppUtil.isAnySessionActive()) {
-            boolean isSocketConnected = socketController.initSession();
-            if (isSocketConnected) {
-                resetPreviousSession();
-                StartSessionRequest startSessionRequest = new StartSessionRequest(loggedInUserId, getLastKnownUserLocation());
+            startSession();
+        } else {
+            terminateCurrentSession();
+        }
+    }
 
-                startSessionRequest.userId = loggedInUserId;
-                if (startSessionRequest.userId != null) {
-                    String json = new Gson().toJson(startSessionRequest);
-                    try {
-                        socketController.connect(new JSONObject(json));
-                    } catch (JSONException e) {
-                        Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    Toast.makeText(this, "No user name attached", Toast.LENGTH_SHORT).show();
+    private void startSession() {
+        boolean isSocketConnected = socketController.initSession();
+        if (isSocketConnected) {
+            resetPreviousSession();
+            StartSessionRequest startSessionRequest = new StartSessionRequest(loggedInUserId, getLastKnownUserLocation());
+
+            startSessionRequest.userId = loggedInUserId;
+            if (startSessionRequest.userId != null) {
+                String json = new Gson().toJson(startSessionRequest);
+                try {
+                    socketController.connect(new JSONObject(json));
+                } catch (JSONException e) {
+                    Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "No user name attached", Toast.LENGTH_SHORT).show();
             }
         } else {
-            resetPreviousSession();
-            socketController.disconnect();
+            Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void terminateCurrentSession() {
+        String sessionId = AppUtil.getSessionId();
+        if(sessionId != null){
+            TerminateSession terminateSessionObj = new TerminateSession(sessionId, loggedInUserId);
+            socketController.terminateSession(terminateSessionObj);
         }
     }
 
@@ -605,6 +618,14 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     public void onEventMainThread(ChangeMarkerVisibility changeMarkerVisibility) {
         Log.a("visibility changed by user " + changeMarkerVisibility.user_id + " visible " + changeMarkerVisibility.visibility);
         setMarkerVisibility(changeMarkerVisibility.user_id, changeMarkerVisibility.visibility);
+    }
+
+    public void onEventMainThread(SessionTerminated sessionTerminated) {
+        Log.a("Session success " + sessionTerminated.success);
+        vSessionInfo.setText("");
+        vSessionInfo.setVisibility(View.GONE);
+        resetPreviousSession();
+        socketController.disconnect();
     }
 
     class UserMarkerInfo {

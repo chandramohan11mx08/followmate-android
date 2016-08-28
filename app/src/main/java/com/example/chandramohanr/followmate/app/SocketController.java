@@ -8,12 +8,15 @@ import com.example.chandramohanr.followmate.app.Constants.UrlConstants;
 import com.example.chandramohanr.followmate.app.controller.SessionEvents;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
+import com.example.chandramohanr.followmate.app.models.events.request.TerminateSession;
 import com.example.chandramohanr.followmate.app.services.UserService;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
+import com.google.gson.Gson;
 import com.noveogroup.android.log.Log;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
@@ -43,6 +46,7 @@ public class SocketController {
             mSocket.on("user_location", new SessionEvents().onUserLocationUpdate);
             mSocket.on("rejoined", new SessionEvents().onRejoined);
             mSocket.on("visibility_changed", new SessionEvents().onUserVisibilityChanged);
+            mSocket.on("terminated", new SessionEvents().onSessionTerminated);
             mSocket.on("ping", new SessionEvents().onPingReceived);
             mSocket.connect();
             return true;
@@ -81,6 +85,22 @@ public class SocketController {
     public void changeVisibility(JSONObject jsonObject){
         if(mSocket != null && mSocket.connected()){
             emitEvent(mSocket, "change_visibility", jsonObject);
+        }
+    }
+
+    public void terminateSession(TerminateSession terminateSession){
+        String json = new Gson().toJson(terminateSession);
+        convertToJsonAndEmit(json, "end_session");
+    }
+
+    public void convertToJsonAndEmit(String json, String event){
+        try {
+            JSONObject jsonObject = new JSONObject(json);
+            if(mSocket != null && mSocket.connected()){
+                emitEvent(mSocket, event, jsonObject);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 

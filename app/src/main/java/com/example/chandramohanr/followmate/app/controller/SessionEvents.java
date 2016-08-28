@@ -10,8 +10,8 @@ import com.example.chandramohanr.followmate.app.models.events.response.NewUserJo
 import com.example.chandramohanr.followmate.app.models.events.response.ReconnectToPreviousLostSession;
 import com.example.chandramohanr.followmate.app.models.events.response.ReconnectedToSession;
 import com.example.chandramohanr.followmate.app.models.events.response.SessionStartedEvent;
+import com.example.chandramohanr.followmate.app.models.events.response.SessionTerminated;
 import com.github.nkzawa.emitter.Emitter;
-import com.noveogroup.android.log.Log;
 
 import de.greenrobot.event.EventBus;
 
@@ -64,6 +64,14 @@ public class SessionEvents {
         public void call(Object... args) {
             ChangeMarkerVisibility changeMarkerVisibilityEvent = JsonParserHelper.getChangeMarkerVisibilityResponseEvent(args[0]);
             eventBus.post(changeMarkerVisibilityEvent);
+        }
+    };
+
+    public Emitter.Listener onSessionTerminated = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            SessionTerminated sessionTerminated = JsonParserHelper.getSessionTerminatedResponseEvent(args[0]);
+            eventBus.post(sessionTerminated);
         }
     };
 
