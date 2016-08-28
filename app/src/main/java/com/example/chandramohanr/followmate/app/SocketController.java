@@ -8,6 +8,10 @@ import com.example.chandramohanr.followmate.app.Constants.UrlConstants;
 import com.example.chandramohanr.followmate.app.controller.SessionEvents;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
+import com.example.chandramohanr.followmate.app.models.events.ChangeMarkerVisibility;
+import com.example.chandramohanr.followmate.app.models.events.ShareLocationInfo;
+import com.example.chandramohanr.followmate.app.models.events.StartSessionRequest;
+import com.example.chandramohanr.followmate.app.models.events.request.JoinSessionRequest;
 import com.example.chandramohanr.followmate.app.models.events.request.TerminateSession;
 import com.example.chandramohanr.followmate.app.services.UserService;
 import com.github.nkzawa.emitter.Emitter;
@@ -56,12 +60,14 @@ public class SocketController {
         }
     }
 
-    public void connect(JSONObject jsonObject) {
-        emitEvent(mSocket, "start_session", jsonObject);
+    public void connect(StartSessionRequest startSessionRequest) {
+        String json = new Gson().toJson(startSessionRequest);
+        convertToJsonAndEmit(json, "start_session");
     }
 
-    public void shareLocation(JSONObject jsonObject){
-        emitEvent(mSocket, "share_location",jsonObject);
+    public void shareLocation(ShareLocationInfo shareLocationInfo){
+        String json = new Gson().toJson(shareLocationInfo);
+        convertToJsonAndEmit(json, "share_location");
     }
 
     public void disconnect(){
@@ -70,22 +76,19 @@ public class SocketController {
         }
     }
 
-    public void joinSession(JSONObject jsonObject){
-        if(mSocket != null && mSocket.connected()){
-            emitEvent(mSocket, "join_session", jsonObject);
-        }
+    public void joinSession(JoinSessionRequest joinSessionRequest){
+        String json = new Gson().toJson(joinSessionRequest);
+        convertToJsonAndEmit(json, "join_session");
     }
 
-    public void rejoinSession(JSONObject jsonObject){
-        if(mSocket != null && mSocket.connected()){
-            emitEvent(mSocket, "rejoin_session",jsonObject);
-        }
+    public void rejoinSession(JoinSessionRequest joinSessionRequest){
+        String json = new Gson().toJson(joinSessionRequest);
+        convertToJsonAndEmit(json, "rejoin_session");
     }
 
-    public void changeVisibility(JSONObject jsonObject){
-        if(mSocket != null && mSocket.connected()){
-            emitEvent(mSocket, "change_visibility", jsonObject);
-        }
+    public void changeVisibility(ChangeMarkerVisibility changeMarkerVisibility){
+        String json = new Gson().toJson(changeMarkerVisibility);
+        convertToJsonAndEmit(json, "change_visibility");
     }
 
     public void terminateSession(TerminateSession terminateSession){
@@ -96,7 +99,7 @@ public class SocketController {
     public void convertToJsonAndEmit(String json, String event){
         try {
             JSONObject jsonObject = new JSONObject(json);
-            if(mSocket != null && mSocket.connected()){
+            if(mSocket != null){
                 emitEvent(mSocket, event, jsonObject);
             }
         } catch (JSONException e) {

@@ -64,7 +64,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.gson.Gson;
 import com.noveogroup.android.log.Log;
 
 import org.androidannotations.annotations.AfterViews;
@@ -72,8 +71,6 @@ import org.androidannotations.annotations.CheckedChange;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -214,12 +211,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     public void toggleShareMyLocationSwitch() {
         shareMyLocation = shareMyLocationSwitch.isChecked();
         ChangeMarkerVisibility changeMarkerVisibility = new ChangeMarkerVisibility(AppUtil.getSessionId(), loggedInUserId, shareMyLocation);
-        String json = new Gson().toJson(changeMarkerVisibility);
-        try {
-            socketController.changeVisibility(new JSONObject(json));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        socketController.changeVisibility(changeMarkerVisibility);
         updateMapZoom();
     }
 
@@ -245,12 +237,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     private void shareMyLocation(UserLocation userLocation) {
         ShareLocationInfo shareLocationInfo = new ShareLocationInfo(loggedInUserId, AppUtil.getSessionId(), userLocation);
-        String json = new Gson().toJson(shareLocationInfo);
-        try {
-            socketController.shareLocation(new JSONObject(json));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        socketController.shareLocation(shareLocationInfo);
     }
 
     public void setMarkerVisibility(String userId, boolean markerVisible) {
@@ -432,24 +419,19 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         if (isSocketConnected) {
             resetPreviousSession();
             StartSessionRequest startSessionRequest = new StartSessionRequest(loggedInUserId, getLastKnownUserLocation());
-
             startSessionRequest.userId = loggedInUserId;
             if (startSessionRequest.userId != null) {
-                String json = new Gson().toJson(startSessionRequest);
-                try {
-                    socketController.connect(new JSONObject(json));
-                } catch (JSONException e) {
-                    Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
-                }
+                socketController.connect(startSessionRequest);
             } else {
                 Toast.makeText(this, "No user name attached", Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Unable to connect to server. Try again.", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void terminateCurrentSession() {
+        removeLocationUpdate();
         String sessionId = AppUtil.getSessionId();
         if(sessionId != null){
             TerminateSession terminateSessionObj = new TerminateSession(sessionId, loggedInUserId);
@@ -508,16 +490,10 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         socketController.initSession();
         JoinSessionRequest joinSessionRequest = new JoinSessionRequest(sessionId, loggedInUserId, getLastKnownUserLocation());
         SharedPreferenceHelper.set(SharedPreferenceHelper.KEY_SESSION_TO_JOIN, sessionId);
-        String json = new Gson().toJson(joinSessionRequest);
-        try {
-            JSONObject jsonObject = new JSONObject(json);
-            if (isRejoin) {
-                socketController.rejoinSession(jsonObject);
-            } else {
-                socketController.joinSession(jsonObject);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
+        if (isRejoin) {
+            socketController.rejoinSession(joinSessionRequest);
+        } else {
+            socketController.joinSession(joinSessionRequest);
         }
     }
 
@@ -622,6 +598,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
 
     public void onEventMainThread(SessionTerminated sessionTerminated) {
         Log.a("Session success " + sessionTerminated.success);
+        vStartSession.setText(getString(R.string.start_session));
         vSessionInfo.setText("");
         vSessionInfo.setVisibility(View.GONE);
         resetPreviousSession();
