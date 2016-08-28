@@ -8,7 +8,7 @@ public final class UrlConstants {
     private static int CURRENT_ENV = production;
 
     private static final String developmentUrl = "http://192.168.1.3:6610";
-    private static final String productionUrl = "http://128.199.224.226::6610";
+    private static final String productionUrl = "http://128.199.224.226:6610";
 
     private static String url[] = {developmentUrl, productionUrl};
 
