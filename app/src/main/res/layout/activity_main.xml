@@ -51,6 +51,7 @@
         <Button
             android:id="@+id/mock_location"
             style="@style/action_button"
-            android:text="mock " />
+            android:text="mock "
+            android:visibility="gone"/>
     </LinearLayout>
 </RelativeLayout>

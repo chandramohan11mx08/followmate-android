@@ -1,7 +1,6 @@
 package com.example.chandramohanr.followmate.app.activities;
 
 import android.Manifest;
-import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -15,7 +14,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.SwitchCompat;
 import android.view.View;
-import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,7 +23,6 @@ import com.example.chandramohanr.followmate.app.Constants.AppConstants;
 import com.example.chandramohanr.followmate.app.SocketController;
 import com.example.chandramohanr.followmate.app.helpers.AppUtil;
 import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
-import com.example.chandramohanr.followmate.app.interfaces.LatLngInterpolator;
 import com.example.chandramohanr.followmate.app.models.ContactModel;
 import com.example.chandramohanr.followmate.app.models.ParticipantInfo;
 import com.example.chandramohanr.followmate.app.models.UserLocation;
@@ -98,6 +95,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     Location lastKnownLocation;
 
     List<UserMarkerInfo> markers = new ArrayList<>();
+    List<UserLocation> UserLocationsList = new ArrayList<>(); //Sample locations for testing animateMarker
 
     EventBus eventBus = EventBus.getDefault();
 
@@ -122,6 +120,14 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
                 processRequestToJoinDeepLinking(pathSegments);
             }
         }
+
+        //Sample locations for testing marker movement and rotation
+        UserLocationsList.add(new UserLocation(12.9535066, 77.6580837, 0));
+        UserLocationsList.add(new UserLocation(12.9535066, 77.6680837, 0));
+        UserLocationsList.add(new UserLocation(12.9635066, 77.6780837, 0));
+        UserLocationsList.add(new UserLocation(12.9735066, 77.6580837, 0));
+        UserLocationsList.add(new UserLocation(12.9535066, 77.6680837, 0));
+
     }
 
     @Override
@@ -252,14 +258,21 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         updateMapZoom();
     }
 
+    int idx = 0;
+    @Click(R.id.mock_location)
+    public void mockLocation() {
+        String userId = AppUtil.getLoggedInUserId();
+            UserLocation userLoc = UserLocationsList.get( (idx++)% UserLocationsList.size() );
+            //UserLocation userLoc = new UserLocation(12.9535066, 77.6580837, 0);
+            setMarker(userId, userLoc);
+    }
+
     public void setMarker(String userId, UserLocation userLocation) {
         boolean markerSet = false;
         for (int i = 0; i < markers.size(); i++) {
             final UserMarkerInfo userMarkerInfo = markers.get(i);
             if (userMarkerInfo.userId.equalsIgnoreCase(userId)) {
-                animateMarker(userLocation, userMarkerInfo.marker);
-                //                userMarkerInfo.marker.setPosition(latlng);
-//                    userMarkerInfo.marker.setRotation(userLocation.bearingTo);
+                userMarkerInfo.animateMarker(map, userLocation);
                 markerSet = true;
                 break;
             }
@@ -269,46 +282,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
             markers.add(new UserMarkerInfo(userId, marker));
         }
         updateMapZoom();
-    }
-
-    public static void animateMarker(final UserLocation userLocation, final Marker marker) {
-        if (marker != null) {
-            final LatLng startPosition = marker.getPosition();
-            final LatLng endPosition = new LatLng(userLocation.lat, userLocation.lng);
-            final float startRotation = marker.getRotation();
-            final LatLngInterpolator latLngInterpolator = new LatLngInterpolator.LinearFixed();
-            ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);
-            valueAnimator.setDuration(1000);
-            valueAnimator.setInterpolator(new LinearInterpolator());
-            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    try {
-                        float v = animation.getAnimatedFraction();
-                        LatLng newPosition = latLngInterpolator.interpolate(v, startPosition, endPosition);
-                        marker.setPosition(newPosition);
-                        marker.setRotation(computeRotation(v, startRotation, userLocation.bearingTo));
-                    } catch (Exception ex) {
-
-                    }
-                }
-            });
-            valueAnimator.start();
-        }
-    }
-
-    private static float computeRotation(float fraction, float start, float end) {
-        float normalizeEnd = end - start;
-        float normalizedEndAbs = (normalizeEnd + 360) % 360;
-        float direction = (normalizedEndAbs > 180) ? -1 : 1;
-        float rotation;
-        if (direction > 0) {
-            rotation = normalizedEndAbs;
-        } else {
-            rotation = normalizedEndAbs - 360;
-        }
-        float result = fraction * rotation + start;
-        return (result + 360) % 360;
     }
 
     @NonNull
@@ -452,11 +425,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
     public void joinSession() {
         Intent intent = new Intent(this, AuthenticateJoinActivity_.class);
         startActivityForResult(intent, JOIN_ACTIVITY_REQUEST_CODE);
-    }
-
-    @Click(R.id.mock_location)
-    public void mockLocation() {
-
     }
 
     @Override
@@ -603,16 +571,5 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback, Go
         vSessionInfo.setVisibility(View.GONE);
         resetPreviousSession();
         socketController.disconnect();
-    }
-
-    class UserMarkerInfo {
-        public String userId;
-        public Marker marker;
-        public boolean isMarkerVisible = true;
-
-        public UserMarkerInfo(String userId, Marker marker) {
-            this.userId = userId;
-            this.marker = marker;
-        }
     }
 }
