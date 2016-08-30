@@ -26,6 +26,7 @@ import com.example.chandramohanr.followmate.app.helpers.SharedPreferenceHelper;
 import com.example.chandramohanr.followmate.app.models.ContactModel;
 import com.example.chandramohanr.followmate.app.models.ParticipantInfo;
 import com.example.chandramohanr.followmate.app.models.UserLocation;
+import com.example.chandramohanr.followmate.app.models.UserMarkerInfo;
 import com.example.chandramohanr.followmate.app.models.events.ChangeMarkerVisibility;
 import com.example.chandramohanr.followmate.app.models.events.SessionConnectionSocketFailure;
 import com.example.chandramohanr.followmate.app.models.events.ShareLocationInfo;
